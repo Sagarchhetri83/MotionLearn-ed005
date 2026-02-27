@@ -249,10 +249,15 @@ Block-based programming challenges:
 
 > Screenshots will be added here showcasing the dashboard, game module, science selection, and parental analytics.
 <img width="1900" height="895" alt="Landindpage" src="https://github.com/user-attachments/assets/d5a26c19-8286-4add-89e8-f734f5eb29a6" />
+
 <img width="1915" height="958" alt="Gamified_Dashboard (2)" src="https://github.com/user-attachments/assets/e91183a9-857a-4e5c-b290-34b19b5fdbd8" />
+
 <img width="1898" height="904" alt="Parental_Dashboard" src="https://github.com/user-attachments/assets/10d749f7-3f0d-4c76-8ae8-c2e9bef564e7" />
-<img width="1918" height="904" alt="Maths_modules" src="https://github.com/user-attachments/assets/e1d9e11d-ec55-4f9d-9656-7d2766c1602c" />
+
+<img width="1530" height="780" alt="screen1" src="https://github.com/user-attachments/assets/b2768b03-0290-4d44-a739-403bfb12cea3" />
+
 <img width="1919" height="907" alt="Science_module" src="https://github.com/user-attachments/assets/b6fca3e7-0448-45f7-9676-a261099e8aec" />
+
 
 
 ---
