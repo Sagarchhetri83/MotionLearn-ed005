@@ -13,6 +13,11 @@ subjectButtons.forEach(button => {
     // Save the subject selection
     const selectedSubject = button.dataset.subject;
     try { localStorage.setItem('selectedModule', selectedSubject); } catch (_) { }
+
+    // Auto-navigate to the new science module immediately as requested
+    if (selectedSubject === 'science') {
+      window.location.href = 'science/science-select.html';
+    }
   });
 });
 
