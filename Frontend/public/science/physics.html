@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Lab – Hand Tracking Sandbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            color: #fff;
+        }
+
+        /* ── CAMERA ── */
+        #webcam {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            z-index: 1;
+            opacity: 0.8;
+            filter: grayscale(80%) contrast(1.2);
+        }
+
+        .bg-dim {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.45);
+            pointer-events: none
+        }
+
+        /* ── CANVAS FOR PHYSICS & HANDS ── */
+        #physicsCanvas,
+        #handCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #physicsCanvas {
+            z-index: 10;
+        }
+
+        #handCanvas {
+            z-index: 11;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(9, 232, 253, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(9, 232, 253, 0.12);
+            border: 1px solid rgba(9, 232, 253, 0.35);
+            color: #09E8FD;
+            padding: 6px 14px;
+            border-radius: 9px;
+            font: 600 12px 'Poppins', sans-serif;
+            text-decoration: none;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .back-btn:hover {
+            background: rgba(9, 232, 253, 0.25);
+            box-shadow: 0 0 12px rgba(9, 232, 253, 0.4)
+        }
+
+        .back-btn svg {
+            width: 13px;
+            height: 13px
+        }
+
+        .topbar-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center
+        }
+
+        .lab-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #09E8FD;
+            text-shadow: 0 0 14px rgba(9, 232, 253, 0.8);
+            line-height: 1
+        }
+
+        .lab-sub {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 500
+        }
+
+        .topbar-right {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .tb-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font: 700 11px 'Poppins', sans-serif;
+            cursor: pointer;
+            border: 1px solid;
+            transition: .2s
+        }
+
+        .tb-reset {
+            background: rgba(255, 100, 100, 0.1);
+            border-color: rgba(255, 100, 100, 0.4);
+            color: #ff6b6b
+        }
+
+        .tb-btn:hover {
+            filter: brightness(1.35)
+        }
+
+        .pinch-badge {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid rgba(9, 232, 253, 0.3);
+            color: rgba(9, 232, 253, 0.6);
+            background: rgba(9, 232, 253, 0.07);
+            transition: .3s
+        }
+
+        .pinch-badge.active {
+            color: #09E8FD;
+            border-color: #09E8FD;
+            background: rgba(9, 232, 253, 0.18);
+            box-shadow: 0 0 10px rgba(9, 232, 253, 0.4)
+        }
+
+        /* ── SIDE PANEL ── */
+        .controls-panel {
+            position: fixed;
+            top: 70px;
+            left: 18px;
+            width: 200px;
+            z-index: 20;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 210, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+        }
+
+        .panel-group {
+            margin-bottom: 12px;
+        }
+
+        .panel-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #09E8FD;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .ctrl-btn {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: .2s;
+            font: 600 12px 'Poppins', sans-serif;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: rgba(0, 210, 255, 0.4);
+        }
+
+        .slider-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        input[type=range] {
+            width: 60%;
+            cursor: pointer;
+            accent-color: #09E8FD;
+        }
+
+        .guide-box {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        /* ── LOADER ── */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            color: #09E8FD;
+            z-index: 999;
+            transition: opacity .5s
+        }
+
+        #loader.gone {
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .load-icon {
+            font-size: 52px;
+            animation: pulse 1s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <video id="webcam" autoplay playsinline muted></video>
+    <div class="bg-dim"></div>
+    <div id="physicsCanvas"></div>
+    <canvas id="handCanvas"></canvas>
+
+    <!-- UI -->
+    <header class="topbar">
+        <a href="science-select.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg> Back
+        </a>
+        <div class="topbar-center">
+            <div class="lab-title">⚛️ Virtual Physics Sandbox</div>
+            <div class="lab-sub">Pinch with hand to grab objects • Drop boxes • Adjust gravity</div>
+        </div>
+        <div class="topbar-right">
+            <div class="pinch-badge" id="pinchBadge">✋ Ready</div>
+            <button class="tb-btn tb-reset" onclick="resetSandbox()">🔄 Restart</button>
+        </div>
+    </header>
+
+    <!-- Side Panel -->
+    <div class="controls-panel">
+        <div class="panel-group">
+            <div class="panel-title">☄️ Spawners</div>
+            <button class="ctrl-btn" onclick="spawnBox()">🧊 Spawn Cube</button>
+            <button class="ctrl-btn" onclick="spawnBall()">🎾 Spawn Ball</button>
+        </div>
+        <div class="panel-group">
+            <div class="panel-title">🌌 Environment</div>
+            <div class="slider-wrap">
+                <span>Gravity:</span>
+                <input type="range" id="gravSlider" min="-1" max="2" step="0.1" value="1"
+                    oninput="updateGravity(this.value)">
+            </div>
+            <div class="slider-wrap">
+                <span>Bounciness:</span>
+                <input type="range" id="bounceSlider" min="0" max="1.5" step="0.1" value="0.8"
+                    oninput="updateRestitution(this.value)">
+            </div>
+        </div>
+        <div class="panel-group">
+            <div class="guide-box">
+                <b>Controls:</b><br>
+                🖐 Move hand to track cursor<br>
+                🤏 Pinch fingers to grab<br>
+                💨 Swipe & release to throw!
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="load-icon">⚛️</div>
+        <div style="font-size:14px; font-weight:700">Loading Physics Engine...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ── PHYSICS SETUP (MATTER.JS) ──────────────────────────────────────────
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Bodies = Matter.Bodies,
+            Composite = Matter.Composite,
+            Constraint = Matter.Constraint,
+            Mouse = Matter.Mouse,
+            MouseConstraint = Matter.MouseConstraint;
+
+        const engine = Engine.create();
+        const world = engine.world;
+
+        let rw = window.innerWidth;
+        let rh = window.innerHeight;
+
+        const render = Render.create({
+            element: document.getElementById('physicsCanvas'),
+            engine: engine,
+            options: {
+                width: rw,
+                height: rh,
+                wireframes: false,
+                background: 'transparent',
+                pixelRatio: window.devicePixelRatio
+            }
+        });
+
+        Render.run(render);
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // Ground & Walls
+        const wallOpt = { isStatic: true, render: { fillStyle: 'rgba(9, 232, 253, 0.15)' }, friction: 0 };
+        const ground = Bodies.rectangle(rw / 2, rh + 25, rw, 50, wallOpt);
+        const leftWall = Bodies.rectangle(-25, rh / 2, 50, rh, wallOpt);
+        const rightWall = Bodies.rectangle(rw + 25, rh / 2, 50, rh, wallOpt);
+        const ceiling = Bodies.rectangle(rw / 2, -500, rw, 50, wallOpt); // highly above fallback
+
+        Composite.add(world, [ground, leftWall, rightWall, ceiling]);
+
+        let globalRestitution = 0.8;
+
+        function spawnBox() {
+            const size = 50 + Math.random() * 30;
+            const box = Bodies.rectangle(rw / 2 + (Math.random() * 100 - 50), 100, size, size, {
+                restitution: globalRestitution,
+                friction: 0.1,
+                render: { fillStyle: `hsl(${Math.random() * 360}, 80%, 60%)` }
+            });
+            Composite.add(world, box);
+        }
+
+        function spawnBall() {
+            const rad = 25 + Math.random() * 15;
+            const ball = Bodies.circle(rw / 2 + (Math.random() * 100 - 50), 100, rad, {
+                restitution: globalRestitution,
+                friction: 0.1,
+                render: { fillStyle: `hsl(${Math.random() * 360}, 80%, 60%)` }
+            });
+            Composite.add(world, ball);
+        }
+
+        function resetSandbox() {
+            Composite.clear(world);
+            Engine.clear(engine);
+            Composite.add(world, [ground, leftWall, rightWall, ceiling]);
+            for (let i = 0; i < 8; i++) spawnBox();
+            for (let i = 0; i < 4; i++) spawnBall();
+        }
+
+        window.updateGravity = (val) => { engine.gravity.y = parseFloat(val); };
+        window.updateRestitution = (val) => {
+            globalRestitution = parseFloat(val);
+            world.bodies.forEach(b => { if (!b.isStatic) b.restitution = globalRestitution; });
+        };
+
+        // Initialize sandbox
+        resetSandbox();
+
+        // Mouse Interactivity (fallback)
+        const mouse = Mouse.create(render.canvas);
+        const mConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: { stiffness: 0.2, render: { visible: false } }
+        });
+        Composite.add(world, mConstraint);
+        render.mouse = mouse;
+
+        window.addEventListener('resize', () => {
+            rw = window.innerWidth; rh = window.innerHeight;
+            render.options.width = rw; render.options.height = rh;
+            render.canvas.width = rw; render.canvas.height = rh;
+            Matter.Body.setPosition(ground, { x: rw / 2, y: rh + 25 });
+            Matter.Body.setPosition(rightWall, { x: rw + 25, y: rh / 2 });
+        });
+
+        // ── HAND TRACKING TO PHYSICS MAPPING ──────────────────────────────────
+        let pinchedBody = null;
+        let pConstraint = null;
+
+        const videoEl = document.getElementById('webcam');
+        const hCanvas = document.getElementById('handCanvas');
+        const hCtx = hCanvas.getContext('2d');
+        const badge = document.getElementById('pinchBadge');
+
+        function onResults(results) {
+            hCanvas.width = rw;
+            hCanvas.height = rh;
+            hCtx.clearRect(0, 0, rw, rh);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                // Flipped for mirror effect
+                const hand = results.multiHandLandmarks[0];
+                const indexTip = hand[8];
+                const thumbTip = hand[4];
+
+                const ix = (1 - indexTip.x) * rw;
+                const iy = indexTip.y * rh;
+                const tx = (1 - thumbTip.x) * rw;
+                const ty = thumbTip.y * rh;
+
+                const midX = (ix + tx) / 2;
+                const midY = (iy + ty) / 2;
+
+                const dist = Math.hypot(ix - tx, iy - ty);
+                const isPinching = dist < 45;
+
+                // Draw simple cursor
+                hCtx.beginPath();
+                hCtx.arc(midX, midY, isPinching ? 8 : 12, 0, Math.PI * 2);
+                hCtx.fillStyle = isPinching ? '#09E8FD' : 'rgba(255, 255, 255, 0.4)';
+                hCtx.fill();
+                hCtx.strokeStyle = isPinching ? '#fff' : '#09E8FD';
+                hCtx.lineWidth = 2;
+                hCtx.stroke();
+
+                if (isPinching) {
+                    badge.classList.add('active');
+                    badge.textContent = '🤏 Pinching';
+
+                    if (!pinchedBody) {
+                        // Find a body under cursor
+                        const bodies = Matter.Composite.allBodies(world).filter(b => !b.isStatic);
+                        const hovered = Matter.Query.point(bodies, { x: midX, y: midY });
+
+                        if (hovered.length > 0) {
+                            pinchedBody = hovered[0];
+                            // Create spring constraint to cursor
+                            pConstraint = Constraint.create({
+                                pointA: { x: midX, y: midY },
+                                bodyB: pinchedBody,
+                                stiffness: 0.1,
+                                damping: 0.1,
+                                render: { type: 'line', strokeStyle: '#09E8FD', lineWidth: 3 }
+                            });
+                            Composite.add(world, pConstraint);
+                        }
+                    } else if (pConstraint) {
+                        // Move constraint anchor
+                        pConstraint.pointA = { x: midX, y: midY };
+                    }
+                } else {
+                    badge.classList.remove('active');
+                    badge.textContent = '✋ Open';
+                    if (pinchedBody && pConstraint) {
+                        Composite.remove(world, pConstraint);
+                        pinchedBody = null;
+                        pConstraint = null;
+                    }
+                }
+            } else {
+                badge.classList.remove('active');
+                badge.textContent = '❌ No Hand';
+                if (pinchedBody && pConstraint) {
+                    Composite.remove(world, pConstraint);
+                    pinchedBody = null;
+                    pConstraint = null;
+                }
+            }
+        }
+
+        const hands = new Hands({
+            locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+        });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        const cvCamera = new Camera(videoEl, {
+            onFrame: async () => await hands.send({ image: videoEl }),
+            width: 320, height: 240
+        });
+
+        cvCamera.start().then(() => {
+            setTimeout(() => document.getElementById('loader').classList.add('gone'), 1000);
+        }).catch(() => {
+            document.getElementById('loader').classList.add('gone');
+            alert('Camera permissions denied. Hand tracking disabled.');
+        });
+    </script>
+</body>
+
+</html>
