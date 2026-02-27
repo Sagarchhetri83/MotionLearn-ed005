@@ -39,9 +39,8 @@
             justify-content: space-between;
             padding: 0 32px;
             height: 68px;
-            background: rgba(0, 0, 0, 0.22);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 204, 0, 0.15);
+            background: #ffffff;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 50;
@@ -52,13 +51,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 204, 0, 0.1);
-            border: 1px solid rgba(255, 204, 0, 0.3);
-            border-radius: 14px;
-            padding: 9px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #FFCC00;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333333;
             cursor: pointer;
             text-decoration: none;
             transition: all .2s;
@@ -66,9 +65,9 @@
         }
 
         .back-btn:hover {
-            background: rgba(255, 204, 0, 0.22);
-            box-shadow: 0 0 16px rgba(255, 204, 0, 0.4);
-            transform: translateX(-2px);
+            background: rgba(0, 0, 0, 0.05);
+            box-shadow: none;
+            transform: translateY(-1px);
         }
 
         .back-btn svg {
@@ -83,17 +82,17 @@
         }
 
         .topbar-title h1 {
-            font-size: 20px;
-            font-weight: 800;
-            color: #FFCC00;
-            text-shadow: 0 0 16px rgba(255, 204, 0, 0.7);
-            line-height: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111111;
+            text-shadow: none;
+            line-height: 1.2;
         }
 
         .topbar-title p {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.55);
-            font-weight: 500;
+            font-size: 14px;
+            color: #555555;
+            font-weight: 400;
             margin-top: 2px;
         }
 
@@ -101,13 +100,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 215, 0, 0.12);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 14px;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
             padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #FFD700;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333333;
         }
 
         /* ── HERO HEADING ─────────────────────── */
@@ -456,15 +455,15 @@
             Back
         </a>
         <div class="topbar-title">
-            <h1>⚗️ Science Module</h1>
+            <h1>Science Module</h1>
             <p>Choose your subject to begin</p>
         </div>
-        <div class="topbar-badge">🔬 3 Modules</div>
+        <div class="topbar-badge">3 Modules</div>
     </header>
 
     <!-- HERO -->
     <section class="hero">
-        <div class="hero-tag">🚀 Select Your Module</div>
+        <div class="hero-tag">Select Your Module</div>
         <h2>Explore the World of <span>Science</span></h2>
         <p>Pick a subject below to start learning — each module has 30 levels to master!</p>
     </section>
@@ -478,7 +477,7 @@
                 aria-label="Start Physics module">
                 <img class="poster-img" src="/images/physics-poster.png" alt="Physics Module">
                 <div class="poster-overlay">
-                    <div class="poster-subject-icon">⚛️</div>
+                    <div class="poster-subject-icon"></div>
                     <div class="poster-title">Physics</div>
                     <div class="poster-desc">Forces, motion, energy &amp; the laws that govern our universe</div>
                     <button class="poster-cta">Start Module →</button>
@@ -490,7 +489,7 @@
                 onclick="selectModule('chemistry')" aria-label="Start Chemistry module">
                 <img class="poster-img" src="/images/chemistry-poster.png" alt="Chemistry Module">
                 <div class="poster-overlay">
-                    <div class="poster-subject-icon">🧪</div>
+                    <div class="poster-subject-icon"></div>
                     <div class="poster-title">Chemistry</div>
                     <div class="poster-desc">Elements, reactions, molecules &amp; the magic of matter</div>
                     <button class="poster-cta">Start Module →</button>
@@ -502,7 +501,7 @@
                 aria-label="Start Biology module">
                 <img class="poster-img" src="/images/biology-poster.png" alt="Biology Module">
                 <div class="poster-overlay">
-                    <div class="poster-subject-icon">🧬</div>
+                    <div class="poster-subject-icon"></div>
                     <div class="poster-title">Biology</div>
                     <div class="poster-desc">Life, cells, ecosystems &amp; the science of living things</div>
                     <button class="poster-cta">Start Module →</button>
