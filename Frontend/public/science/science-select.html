@@ -147,8 +147,8 @@
         }
 
         .hero h2 span {
-            color: #09E8FD;
-            text-shadow: 0 0 14px rgba(9, 232, 253, 0.8);
+            color: #FFCC00;
+            text-shadow: 0 0 14px rgba(255, 204, 0, 0.8);
         }
 
         .hero p {
@@ -206,8 +206,8 @@
         }
 
         .poster-card.physics:hover {
-            border-color: #09E8FD;
-            box-shadow: 0 20px 60px rgba(9, 232, 253, 0.45);
+            border-color: #FFCC00;
+            box-shadow: 0 20px 60px rgba(255, 204, 0, 0.45);
         }
 
         .poster-card.chemistry:hover {
@@ -226,6 +226,7 @@
             object-fit: cover;
             display: block;
             transition: transform .4s ease;
+            opacity: 0.75;
         }
 
         .poster-card:hover .poster-img {
@@ -269,8 +270,8 @@
         }
 
         .physics .poster-title {
-            color: #09E8FD;
-            text-shadow: 0 0 16px rgba(9, 232, 253, 0.8);
+            color: #FFCC00;
+            text-shadow: 0 0 16px rgba(255, 204, 0, 0.8);
         }
 
         .chemistry .poster-title {
@@ -308,7 +309,7 @@
         }
 
         .physics .poster-cta {
-            background: linear-gradient(135deg, #09E8FD, #0ea5e9);
+            background: linear-gradient(135deg, #FFCC00, #d97706);
             color: #000;
         }
 
@@ -467,9 +468,9 @@
         <div class="posters-grid">
 
             <!-- PHYSICS -->
-            <a class="poster-card physics" href="physics.html" id="physics-card"
-                onclick="selectModule('physics')" aria-label="Start Physics module">
-                <img class="poster-img" src="../images/physics-poster.png" alt="Physics Module">
+            <a class="poster-card physics" href="physics.html" id="physics-card" onclick="selectModule('physics')"
+                aria-label="Start Physics module">
+                <img class="poster-img" src="/images/physics-poster.png" alt="Physics Module">
                 <div class="poster-overlay">
                     <div class="poster-subject-icon">⚛️</div>
                     <div class="poster-title">Physics</div>
@@ -481,7 +482,7 @@
             <!-- CHEMISTRY -->
             <a class="poster-card chemistry" href="chemistry.html" id="chemistry-card"
                 onclick="selectModule('chemistry')" aria-label="Start Chemistry module">
-                <img class="poster-img" src="../images/chemistry-poster.png" alt="Chemistry Module">
+                <img class="poster-img" src="/images/chemistry-poster.png" alt="Chemistry Module">
                 <div class="poster-overlay">
                     <div class="poster-subject-icon">🧪</div>
                     <div class="poster-title">Chemistry</div>
@@ -493,7 +494,7 @@
             <!-- BIOLOGY -->
             <a class="poster-card biology" href="biology.html" id="biology-card" onclick="selectModule('biology')"
                 aria-label="Start Biology module">
-                <img class="poster-img" src="../images/biology-poster.png" alt="Biology Module">
+                <img class="poster-img" src="/images/biology-poster.png" alt="Biology Module">
                 <div class="poster-overlay">
                     <div class="poster-subject-icon">🧬</div>
                     <div class="poster-title">Biology</div>
