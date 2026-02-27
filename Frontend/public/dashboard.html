@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +11,13 @@
   <meta name="theme-color" content="#09E8FD">
   <meta name="description" content="EduCatch Dashboard">
 </head>
+
 <body>
 
   <div class="dashboard-container">
     <div class="center-hero-wrap">
-      <img class="center-hero" src="images/anime character.png" alt="Hero" onerror="this.onerror=null; this.src='images/anime%20character.png';">
+      <img class="center-hero" src="images/anime character.png" alt="Hero"
+        onerror="this.onerror=null; this.src='images/anime%20character.png';">
     </div>
 
     <header class="dashboard-header">
@@ -55,22 +58,22 @@
         </div>
       </div>
     </header>
-    
+
     <aside class="left-sidebar">
-      <button class="sidebar-button active" id="dashboard-btn">
+      <button class="sidebar-button active" id="dashboard-btn" title="Parent Dashboard">
         <img src="images/dashboard-1.png" alt="Dashboard">
       </button>
-      <button class="sidebar-button" id="leaderboard-btn">
+      <button class="sidebar-button" id="leaderboard-btn" title="Leaderboard">
         <img src="images/leaderboard.png" alt="Leaderboard">
       </button>
-      <button class="sidebar-button" id="challenge-btn">
+      <button class="sidebar-button" id="challenge-btn" title="Challenge">
         <img src="images/1vs1.png" alt="Challenge">
       </button>
     </aside>
 
     <main class="main-content">
       <div class="title-block">
-        
+
         <h1 class="main-title">MotionLearn</h1>
         <p class="subtitle">Make your doubt Clear</p>
       </div>
@@ -100,7 +103,7 @@
 
     <aside class="right-sidebar">
       <h3 class="sidebar-title">Badges & Achievements</h3>
-      
+
       <div class="achievements-list">
         <!-- Achievement Item 1 -->
         <div class="achievement-item" style="--progress: 60%;">
@@ -179,7 +182,15 @@
     }
   </script>
   <script src="dashboard.js"></script>
+  <script>
+    // Dashboard button → opens Parent Dashboard
+    const dashboardBtn = document.getElementById('dashboard-btn');
+    if (dashboardBtn) {
+      dashboardBtn.addEventListener('click', () => {
+        window.location.href = 'parent-dashboard.html';
+      });
+    }
+  </script>
 </body>
+
 </html>
-
-

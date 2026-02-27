@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biology – BioView Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cyan: #00d2ff;
+      --gold: #ffcc00;
+      --danger: #ff4444;
+      --glass: rgba(15, 23, 42, 0.88)
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+      background: #0f1012;
+      color: #e2e8f0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column
+    }
+
+    /* TOPBAR */
+    .topbar {
+      height: 52px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      flex-shrink: 0;
+      z-index: 100
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      color: var(--cyan);
+      padding: 6px 14px;
+      border-radius: 9px;
+      font: 600 12px 'Poppins', sans-serif;
+      text-decoration: none;
+      transition: .2s
+    }
+
+    .back-btn:hover {
+      background: rgba(0, 210, 255, 0.22);
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.4)
+    }
+
+    .back-btn svg {
+      width: 13px;
+      height: 13px
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--cyan);
+      text-shadow: 0 0 16px rgba(0, 210, 255, 0.7)
+    }
+
+    .topbar-right {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .gesture-hud {
+      padding: 4px 14px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      color: rgba(0, 210, 255, 0.7);
+      background: rgba(0, 210, 255, 0.07);
+      transition: .3s;
+      min-width: 180px;
+      text-align: center
+    }
+
+    .gesture-hud.rotate {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: rgba(0, 210, 255, 0.12);
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.25)
+    }
+
+    .gesture-hud.zoom {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: rgba(255, 204, 0, 0.1);
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.2)
+    }
+
+    .gesture-hud.xray {
+      color: #c084fc;
+      border-color: #c084fc;
+      background: rgba(192, 132, 252, 0.1)
+    }
+
+    .gesture-hud.lock {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: rgba(255, 68, 68, 0.1)
+    }
+
+    /* VIEWER */
+    .viewer {
+      flex: 1;
+      position: relative;
+      overflow: hidden
+    }
+
+    #threeCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    /* UI PANELS */
+    .panel {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      pointer-events: auto
+    }
+
+    .panel h3 {
+      margin: 0 0 10px 0;
+      color: var(--cyan);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700
+    }
+
+    /* TOP-LEFT panel */
+    #ui-top {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none
+    }
+
+    .model-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .model-tab {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: .2s;
+      font: 600 12px 'Poppins', sans-serif;
+      text-align: left;
+      pointer-events: auto
+    }
+
+    .model-tab:hover {
+      background: rgba(0, 210, 255, 0.1);
+      border-color: var(--cyan);
+      color: var(--cyan)
+    }
+
+    .model-tab.active {
+      background: var(--cyan);
+      color: #000;
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.4)
+    }
+
+    .view-tab {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: .2s;
+      font: 600 12px 'Poppins', sans-serif;
+      pointer-events: auto;
+      margin-bottom: 5px
+    }
+
+    .view-tab:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.3)
+    }
+
+    .view-tab.active {
+      background: var(--cyan);
+      color: #000;
+      border-color: var(--cyan)
+    }
+
+    .view-tab.xray-active {
+      background: #c084fc;
+      color: #000;
+      border-color: #c084fc
+    }
+
+    /* BOTTOM-LEFT: Guide */
+    #ui-bottom {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      z-index: 30;
+      pointer-events: none
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 7px;
+      font-size: 12px;
+      color: #e2e8f0
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0
+    }
+
+    .icon-box {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-size: 16px;
+      flex-shrink: 0
+    }
+
+    /* WEBCAM corner */
+    #cv-layer {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      width: 240px;
+      height: 180px;
+      background: #000;
+      border: 2px solid var(--cyan);
+      border-radius: 10px;
+      overflow: hidden;
+      z-index: 30;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.25)
+    }
+
+    #webcam-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1)
+    }
+
+    #handCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    .gesture-hint {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 5px 8px;
+      text-align: center
+    }
+
+    /* Loader */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: var(--cyan);
+      z-index: 999;
+      transition: opacity .5s
+    }
+
+    #loader.gone {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .load-icon {
+      font-size: 52px;
+      animation: hb .8s ease-in-out infinite
+    }
+
+    @keyframes hb {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.18)
+      }
+    }
+
+    .load-txt {
+      font-size: 14px;
+      font-weight: 700
+    }
+
+    .load-bar {
+      width: 200px;
+      height: 4px;
+      background: rgba(0, 210, 255, 0.2);
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .load-fill {
+      height: 100%;
+      background: var(--cyan);
+      border-radius: 99px;
+      width: 0%;
+      transition: width .2s
+    }
+
+    /* X-Ray glow overlay */
+    #xray-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(0, 210, 255, 0.06), transparent 70%);
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      transition: .5s
+    }
+
+    #xray-overlay.active {
+      opacity: 1
+    }
+
+    /* Lock overlay */
+    #lock-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 0, 0, 0.07);
+      backdrop-filter: blur(1px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      z-index: 20;
+      pointer-events: none
+    }
+
+    #lock-overlay.active {
+      display: flex
+    }
+  </style>
+
+  <!-- Three.js + GLTFLoader (same as original) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- MediaPipe (same as original) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="./science-select.html" class="back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>Back
+    </a>
+    <div class="topbar-title">🧬 Biology – BioView 3D Explorer</div>
+    <div class="topbar-right">
+      <div class="gesture-hud" id="gestureHud">✋ Waiting for hands...</div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWER -->
+  <div class="viewer">
+    <canvas id="threeCanvas"></canvas>
+    <div id="xray-overlay"></div>
+    <div id="lock-overlay">🔒</div>
+
+    <!-- TOP-LEFT: Model + View selector -->
+    <div id="ui-top">
+      <div class="panel" style="width:200px">
+        <h3>🫁 Specimen</h3>
+        <div class="model-tabs">
+          <button class="model-tab" id="tab-brain" onclick="switchModel('brain')">🧠 Brain (Neural)</button>
+          <button class="model-tab active" id="tab-heart" onclick="switchModel('heart')">🫀 Heart (Cardio)</button>
+          <button class="model-tab" id="tab-skeleton" onclick="switchModel('skeleton')">💀 Skeleton (Osteo)</button>
+        </div>
+      </div>
+      <div class="panel" style="width:200px">
+        <h3>🔬 View Mode</h3>
+        <button class="view-tab active" id="btn-exam" onclick="setBtn('exam');setExaminationMode()">🔍
+          Examination</button>
+        <button class="view-tab" id="btn-xray" onclick="setBtn('xray');setXRayMode()">☢️ X-Ray / Density</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM-LEFT: Gesture guide -->
+    <div id="ui-bottom">
+      <div class="panel" style="width:220px">
+        <h3>🖐 Control Guide</h3>
+        <div class="legend-item">
+          <div class="icon-box">✋</div>
+          <div>Left Hand: <b style="color:var(--cyan)">Rotate</b></div>
+        </div>
+        <div class="legend-item">
+          <div class="icon-box">✌️</div>
+          <div>Left Peace Sign: <b style="color:#c084fc">X-Ray</b></div>
+        </div>
+        <div class="legend-item">
+          <div class="icon-box">✊</div>
+          <div>Left Fist: <b style="color:var(--danger)">Lock All</b></div>
+        </div>
+        <div class="legend-item">
+          <div class="icon-box">🤏</div>
+          <div>Right Pinch: <b style="color:var(--gold)">Zoom</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEBCAM -->
+    <div id="cv-layer">
+      <video id="webcam-feed" playsinline></video>
+      <canvas id="handCanvas"></canvas>
+      <div class="gesture-hint" id="gestureHint">Waiting for hands...</div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+      <div class="load-icon">🧬</div>
+      <div class="load-txt" id="loadTxt">Loading Biology Module...</div>
+      <div class="load-bar">
+        <div class="load-fill" id="loadFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── CONFIGURATION (from original) ────────────────────────────────────────────
+    const CONFIG = {
+      assets: { brain: 'models/brain.glb', heart: 'models/heart.glb', skeleton: 'models/skeleton.glb' },
+      normalizationTarget: 3.0,
+      rotationSensitivity: 8.0,
+      zoomSensitivity: 15.0,
+      smoothing: 0.1
+    };
+
+    // ── STATE (from original) ─────────────────────────────────────────────────────
+    const state = {
+      currentMesh: null,
+      originalMaterials: new Map(),
+      rightHandActive: false,
+      leftHandActive: false,
+      isTwoFingers: false,
+      isFist: false,
+      lastLeftHandPos: { x: null, y: null },
+      lastRightPinchDist: null,
+      targetRotX: 0,
+      targetRotY: 0,
+      targetCamZ: 8,
+      currentModel: 'heart',
+      clock: 0            // tracks elapsed time for X-axis float animation
+    };
+
+    // ── THREE.JS SETUP (same as original) ────────────────────────────────────────
+    const canvas = document.getElementById('threeCanvas');
+    const viewer = document.querySelector('.viewer');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#0f1012');
+    scene.fog = new THREE.Fog('#0f1012', 10, 35);
+
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 0, state.targetCamZ);
+
+    // Lights (same as original)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+    mainLight.position.set(5, 5, 5); scene.add(mainLight);
+    const rimLight = new THREE.SpotLight(0x00d2ff, 4);
+    rimLight.position.set(-5, 5, -5); scene.add(rimLight);
+
+    function resize() {
+      const w = viewer.clientWidth, h = viewer.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(viewer);
+    resize();
+
+    // ── ASSETS (same logic as original) ──────────────────────────────────────────
+    const gltfLoader = new THREE.GLTFLoader();
+    const modelCache = {};
+
+    function loadModel(key) {
+      return new Promise((resolve) => {
+        if (modelCache[key]) { resolve(modelCache[key].clone()); return; }
+        gltfLoader.load(
+          CONFIG.assets[key],
+          gltf => { modelCache[key] = gltf.scene; resolve(gltf.scene.clone()); },
+          xhr => {
+            const pct = xhr.total ? (xhr.loaded / xhr.total * 100) : 0;
+            document.getElementById('loadFill').style.width = pct + '%';
+            document.getElementById('loadTxt').textContent = `Loading ${key}... ${pct.toFixed(0)}%`;
+          },
+          err => {
+            console.error('Model load error:', err);
+            resolve(new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), new THREE.MeshStandardMaterial({ color: 0x888888 })));
+          }
+        );
+      });
+    }
+
+    function normalizeModel(obj) {
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = box.getSize(new THREE.Vector3());
+      obj.position.sub(box.getCenter(new THREE.Vector3()));
+      obj.scale.setScalar(CONFIG.normalizationTarget / Math.max(size.x, size.y, size.z));
+    }
+
+    async function switchModel(name) {
+      document.getElementById('loader').classList.remove('gone');
+      if (state.currentMesh) scene.remove(state.currentMesh);
+      state.originalMaterials.clear();
+
+      const model = await loadModel(name);
+      normalizeModel(model);
+
+      model.traverse(c => { if (c.isMesh) state.originalMaterials.set(c.uuid, c.material); });
+      state.currentMesh = model;
+      state.currentModel = name; // track active model
+      state.targetRotX = 0; state.targetRotY = 0;
+      state.clock = 0;             // reset float clock on model switch
+      model.rotation.set(0, 0, 0);
+      model.position.set(0, 0, 0); // always start centered
+      scene.add(model);
+
+      // Update tab buttons
+      ['brain', 'heart', 'skeleton'].forEach(k => { document.getElementById('tab-' + k).classList.toggle('active', k === name); });
+      setBtn('exam'); setExaminationMode();
+      document.getElementById('loader').classList.add('gone');
+    }
+
+    // ── VIEW MODES ────────────────────────────────────────────────────────────────
+    function setExaminationMode() {
+      document.getElementById('xray-overlay').classList.remove('active');
+      if (!state.currentMesh) return;
+      state.currentMesh.traverse(c => {
+        if (c.isMesh && state.originalMaterials.has(c.uuid)) c.material = state.originalMaterials.get(c.uuid);
+      });
+    }
+
+    function setXRayMode() {
+      document.getElementById('xray-overlay').classList.add('active');
+      if (!state.currentMesh) return;
+      const m = new THREE.MeshPhysicalMaterial({
+        color: 0x00d2ff, transmission: 0.7, transparent: true, opacity: 0.35,
+        metalness: 0.2, roughness: 0.05, side: THREE.DoubleSide
+      });
+      state.currentMesh.traverse(c => { if (c.isMesh) c.material = m; });
+    }
+
+    function setBtn(id) {
+      ['exam', 'xray'].forEach(k => {
+        const b = document.getElementById('btn-' + k);
+        b.className = 'view-tab' + (k === id ? (id === 'xray' ? ' xray-active' : ' active') : '');
+      });
+    }
+
+    // ── MEDIAPIPE GESTURE LOGIC (faithfully ported from original) ─────────────────
+    const videoEl = document.getElementById('webcam-feed');
+    const hCanvas = document.getElementById('handCanvas');
+    const hCtx = hCanvas.getContext('2d');
+    const gestHint = document.getElementById('gestureHint');
+    const gestHud = document.getElementById('gestureHud');
+    const lockEl = document.getElementById('lock-overlay');
+
+    function onResults(results) {
+      hCanvas.width = document.getElementById('cv-layer').clientWidth;
+      hCanvas.height = document.getElementById('cv-layer').clientHeight;
+      hCtx.clearRect(0, 0, hCanvas.width, hCanvas.height);
+
+      let leftLm = null, rightLm = null;
+      if (results.multiHandLandmarks) {
+        for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+          const label = results.multiHandedness[i].label;
+          if (label === 'Left') leftLm = results.multiHandLandmarks[i];
+          if (label === 'Right') rightLm = results.multiHandLandmarks[i];
+        }
+      }
+
+      // Draw hand skeletons on camera preview (flipped x to match mirrored video)
+      results.multiHandLandmarks?.forEach((lm, idx) => {
+        const sc = lm.map(p => ({ x: (1 - p.x) * hCanvas.width, y: p.y * hCanvas.height }));
+        const CONN = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
+        const col = idx === 0 ? 'rgba(0,210,255,0.7)' : 'rgba(255,204,0,0.7)';
+        const dot = idx === 0 ? '#00d2ff' : '#ffcc00';
+        hCtx.strokeStyle = col; hCtx.lineWidth = 1.5;
+        CONN.forEach(([a, b]) => { hCtx.beginPath(); hCtx.moveTo(sc[a].x, sc[a].y); hCtx.lineTo(sc[b].x, sc[b].y); hCtx.stroke(); });
+        sc.forEach(p => { hCtx.beginPath(); hCtx.arc(p.x, p.y, 3, 0, Math.PI * 2); hCtx.fillStyle = dot; hCtx.fill(); });
+      });
+
+      let feedbackText = '';
+
+      // ── LEFT HAND: ROTATE / PEACE=X-RAY / FIST=LOCK ──────────────────────────
+      if (leftLm) {
+        state.leftHandActive = true;
+        const lm = leftLm;
+        const indexCurled = lm[8].y > lm[6].y;
+        const middleCurled = lm[12].y > lm[10].y;
+        const ringCurled = lm[16].y > lm[14].y;
+        const pinkyCurled = lm[20].y > lm[18].y;
+        state.isFist = indexCurled && middleCurled && ringCurled && pinkyCurled;
+
+        if (state.isFist) {
+          feedbackText += '⛔ LOCKED (Left Fist) ';
+          state.lastLeftHandPos = { x: null, y: null };
+          lockEl.classList.add('active');
+          gestHud.textContent = '✊ LEFT FIST — All Controls Locked';
+          gestHud.className = 'gesture-hud lock';
+        } else {
+          lockEl.classList.remove('active');
+          const isPeace = !indexCurled && !middleCurled && ringCurled && pinkyCurled;
+          if (isPeace && !state.isTwoFingers) { state.isTwoFingers = true; setBtn('xray'); setXRayMode(); }
+          else if (!isPeace && state.isTwoFingers) { state.isTwoFingers = false; setBtn('exam'); setExaminationMode(); }
+
+          if (state.isTwoFingers) {
+            feedbackText += '✌️ X-Ray ON ';
+            state.lastLeftHandPos = { x: null, y: null };
+            gestHud.textContent = '✌️ X-Ray Mode Active';
+            gestHud.className = 'gesture-hud xray';
+          } else {
+            // ROTATE
+            const handX = (lm[0].x + lm[9].x) / 2;
+            const handY = (lm[0].y + lm[9].y) / 2;
+            if (state.lastLeftHandPos.x !== null) {
+              const dx = state.lastLeftHandPos.x - handX;
+              const dy = handY - state.lastLeftHandPos.y;
+              state.targetRotY += dx * CONFIG.rotationSensitivity;
+              // Skeleton: only horizontal rotation (X-axis locked at 0)
+              if (state.currentModel !== 'skeleton') {
+                state.targetRotX += dy * CONFIG.rotationSensitivity;
+              } else {
+                state.targetRotX = 0;
+              }
+            }
+            state.lastLeftHandPos = { x: handX, y: handY };
+            feedbackText += state.currentModel === 'skeleton' ? '✋ Rotating (horizontal only) ' : '✋ Rotating ';
+            gestHud.textContent = state.currentModel === 'skeleton' ? '✋ Skeleton — Horizontal Only' : '✋ Left Hand — Rotating';
+            gestHud.className = 'gesture-hud rotate';
+          }
+        }
+      } else {
+        state.leftHandActive = false;
+        state.isFist = false;
+        state.lastLeftHandPos = { x: null, y: null };
+        lockEl.classList.remove('active');
+      }
+
+      // ── RIGHT HAND: ZOOM (pinch distance) ─────────────────────────────────────
+      if (rightLm) {
+        state.rightHandActive = true;
+        if (state.isFist) {
+          feedbackText += '🔒 Zoom Locked';
+          state.lastRightPinchDist = null;
+        } else {
+          const lm = rightLm;
+          const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+          if (state.lastRightPinchDist !== null) {
+            const delta = pinchDist - state.lastRightPinchDist;
+            state.targetCamZ -= delta * CONFIG.zoomSensitivity;
+            state.targetCamZ = Math.max(2, Math.min(state.targetCamZ, 15));
+          }
+          state.lastRightPinchDist = pinchDist;
+          feedbackText += '🤏 Right: Zoom';
+          if (!leftLm) { gestHud.textContent = '🤏 Right Hand — Zooming'; gestHud.className = 'gesture-hud zoom'; }
+        }
+      } else {
+        state.rightHandActive = false;
+        state.lastRightPinchDist = null;
+      }
+
+      if (!leftLm && !rightLm) {
+        feedbackText = 'No hands detected';
+        gestHud.textContent = '✋ Waiting for hands...';
+        gestHud.className = 'gesture-hud';
+      }
+      gestHint.textContent = feedbackText;
+    }
+
+    // ── MEDIAPIPE HANDS SETUP (same version as original) ─────────────────────────
+    const hands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`
+    });
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    hands.onResults(onResults);
+
+    const cvCamera = new Camera(videoEl, {
+      onFrame: async () => await hands.send({ image: videoEl }),
+      width: 320, height: 240
+    });
+    cvCamera.start()
+      .then(() => console.log('Camera ready'))
+      .catch(() => { alert('Camera denied — gestures unavailable'); document.getElementById('loader').classList.add('gone'); });
+
+    // Fallback hide loader
+    setTimeout(() => document.getElementById('loader').classList.add('gone'), 4000);
+
+    // ── ANIMATION LOOP ────────────────────────────────────────────────────────────
+    function animate() {
+      requestAnimationFrame(animate);
+      if (state.currentMesh) {
+        // Smooth rotation via hand gestures (X and Y axes only)
+        state.currentMesh.rotation.y = THREE.MathUtils.lerp(state.currentMesh.rotation.y, state.targetRotY, CONFIG.smoothing);
+        state.currentMesh.rotation.x = THREE.MathUtils.lerp(state.currentMesh.rotation.x, state.targetRotX, CONFIG.smoothing);
+
+        // Zoom via right hand pinch
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, state.targetCamZ, CONFIG.smoothing);
+
+        // Idle Y-spin when no left hand (all models including brain)
+        if (!state.leftHandActive) state.targetRotY += 0.002;
+
+        // All models: lock position to center (0, 0, 0) — no floating/drift
+        state.currentMesh.position.x = THREE.MathUtils.lerp(state.currentMesh.position.x, 0, 0.1);
+        state.currentMesh.position.y = THREE.MathUtils.lerp(state.currentMesh.position.y, 0, 0.1);
+        state.currentMesh.position.z = THREE.MathUtils.lerp(state.currentMesh.position.z, 0, 0.1);
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // ── INIT ─────────────────────────────────────────────────────────────────────
+    switchModel('heart');
+  </script>
+</body>
+
+</html>

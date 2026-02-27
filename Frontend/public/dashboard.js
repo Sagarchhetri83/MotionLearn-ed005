@@ -12,7 +12,7 @@ subjectButtons.forEach(button => {
 
     // Save the subject selection
     const selectedSubject = button.dataset.subject;
-    try { localStorage.setItem('selectedModule', selectedSubject); } catch (_) {}
+    try { localStorage.setItem('selectedModule', selectedSubject); } catch (_) { }
   });
 });
 
@@ -22,7 +22,7 @@ subjectButtons.forEach(button => {
 const avatarImages = [
   'images/user-logo-1.png',
   'images/user-logo-2.png',
-  'images/user-logo-3.png', 
+  'images/user-logo-3.png',
   'images/user-logo-4.png',
   'images/user-logo-5.png'
 ];
@@ -47,17 +47,17 @@ function updateAvatarDisplay() {
   if (currentAvatar && avatarCounter) {
     currentAvatar.src = avatarImages[currentAvatarIndex];
     avatarCounter.textContent = `${currentAvatarIndex + 1}/${avatarImages.length}`;
-    
+
     // Update main profile avatar too
     const mainProfileAvatar = document.querySelector('.profile-avatar');
     if (mainProfileAvatar) {
       mainProfileAvatar.src = avatarImages[currentAvatarIndex];
     }
-    
+
     // Save avatar selection to localStorage
     try {
       localStorage.setItem('selectedAvatar', currentAvatarIndex.toString());
-    } catch (_) {}
+    } catch (_) { }
   }
 }
 
@@ -78,7 +78,7 @@ try {
     currentAvatarIndex = parseInt(savedAvatar);
     updateAvatarDisplay();
   }
-} catch (_) {}
+} catch (_) { }
 
 // Toggle settings menu
 if (settingsBtn && settingsMenu) {
@@ -132,7 +132,12 @@ if (startButton) {
         alert('Please select a subject book first!');
         return;
       }
-      // Go to the main book (30 levels). Inner 10-levels will unlock next outer level upon completion.
+      // Science → show sub-module picker (Physics / Chemistry / Biology)
+      if (selected === 'science') {
+        window.location.href = 'science/science-select.html';
+        return;
+      }
+      // Other subjects go straight to level select
       window.location.href = 'level-select.html';
     } catch (_) {
       alert('Please select a subject book first!');
@@ -161,7 +166,7 @@ function getSubjectProgress(subject) {
       const pctOuter = Math.round((outerCompleted / 30) * 100);
       if (!isNaN(pctOuter)) candidates.push(pctOuter);
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // 2) Inner 10-level (in-game) progress from game screen state
   try {
@@ -170,14 +175,14 @@ function getSubjectProgress(subject) {
     const innerTotal = 10; // assume 10 inner levels per book page
     const pctInner = Math.round((innerCompleted / innerTotal) * 100);
     if (!isNaN(pctInner)) candidates.push(pctInner);
-  } catch (_) {}
+  } catch (_) { }
 
   // 3) Optional manual override subjectProgress_subject
   try {
     const raw = localStorage.getItem(`subjectProgress_${subject}`);
     const val = raw == null ? NaN : parseFloat(raw);
     if (!isNaN(val)) candidates.push(Math.max(0, Math.min(100, Math.round(val))));
-  } catch (_) {}
+  } catch (_) { }
 
   if (candidates.length) {
     // Use the maximum to reflect the most advanced indicator
@@ -230,26 +235,26 @@ function updateSidebarSubjectLabel() {
     const name = subjects[sidebarSubjectIndex];
     sidebarLabel.textContent = name.charAt(0).toUpperCase() + name.slice(1);
   }
-  try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) {}
+  try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) { }
 }
 
 if (leftArrow && rightArrow && sidebarLabel) {
   leftArrow.addEventListener('click', () => {
     sidebarSubjectIndex = (sidebarSubjectIndex - 1 + subjects.length) % subjects.length;
-    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) {}
+    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) { }
     updateSidebarSubjectLabel();
     updateBeakerProgress();
   });
   rightArrow.addEventListener('click', () => {
     sidebarSubjectIndex = (sidebarSubjectIndex + 1) % subjects.length;
-    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) {}
+    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) { }
     updateSidebarSubjectLabel();
     updateBeakerProgress();
   });
   // Make label itself advance to next subject on click (for easier tapping)
   sidebarLabel.addEventListener('click', () => {
     sidebarSubjectIndex = (sidebarSubjectIndex + 1) % subjects.length;
-    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) {}
+    try { localStorage.setItem('selectedModule', subjects[sidebarSubjectIndex]); } catch (_) { }
     updateSidebarSubjectLabel();
     updateBeakerProgress();
   });
@@ -258,7 +263,7 @@ if (leftArrow && rightArrow && sidebarLabel) {
     const saved = localStorage.getItem('selectedModule');
     const idx = subjects.indexOf(saved || 'english');
     sidebarSubjectIndex = idx >= 0 ? idx : 0;
-  } catch (_) {}
+  } catch (_) { }
   updateSidebarSubjectLabel();
   updateBeakerProgress();
 }
