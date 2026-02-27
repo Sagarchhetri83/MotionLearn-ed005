@@ -144,7 +144,7 @@
 
     // Supabase configuration
     const supabaseUrl = 'https://jxxdiunezswwcwcwcjoz.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eGRpdW5lenN3d2N3Y3djam96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzI5OTQsImV4cCI6MjA4Nzc0ODk5NH0.TivXn0Ks1BwM4alzZVl_m5fR7Ayrgbg_Rqh1rKz7zYU'
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
     // Initialize Supabase
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
