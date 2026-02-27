@@ -13,7 +13,7 @@ function Header() {
   
         </div>
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/dashboard')}
           className="bg-rose-500 text-white px-6 py-2 rounded-full hover:bg-rose-600 transition-all duration-300 hover:scale-105 shadow-md font-semibold"
         >
           Sign In

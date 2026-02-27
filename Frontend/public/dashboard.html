@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCatch - Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css?v=202310271500">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="icons/icon-192.svg">
+  <meta name="theme-color" content="#09E8FD">
+  <meta name="description" content="EduCatch Dashboard">
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <div class="center-hero-wrap">
+      <img class="center-hero" src="images/anime character.png" alt="Hero" onerror="this.onerror=null; this.src='images/anime%20character.png';">
+    </div>
+
+    <header class="dashboard-header">
+      <div class="user-profile">
+        <img src="images/user-logo.png" alt="User Avatar" class="profile-avatar">
+        <div class="user-info">
+          <span class="user-name">Name</span>
+          <div class="level-bar-container">
+            <div class="level-bar-progress" style="width: 20%;"></div>
+          </div>
+          <span class="level-text">LV 00/90</span>
+        </div>
+      </div>
+      <div class="settings-dropdown">
+        <button class="settings-button" id="settings-btn" aria-label="Settings">
+          <img src="images/setting.png" alt="Settings">
+        </button>
+        <div class="settings-menu" id="settings-menu">
+          <div class="settings-menu-item avatar-settings-item" id="avatar-settings-btn">
+            <span class="settings-icon">👤</span>
+            <span>Avatar Settings</span>
+          </div>
+          <div class="avatar-selection" id="avatar-selection">
+            <div class="avatar-container">
+              <img src="images/user-logo-1.png" alt="Avatar" class="current-avatar" id="current-avatar">
+              <div class="avatar-nav">
+                <button class="avatar-btn prev-btn" id="prev-avatar">‹</button>
+                <span class="avatar-counter" id="avatar-counter">1/5</span>
+                <button class="avatar-btn next-btn" id="next-avatar">›</button>
+              </div>
+            </div>
+          </div>
+          <div class="settings-divider"></div>
+          <div class="settings-menu-item logout-item" id="logout-btn">
+            <span class="settings-icon">🚪</span>
+            <span>Logout</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <aside class="left-sidebar">
+      <button class="sidebar-button active" id="dashboard-btn">
+        <img src="images/dashboard-1.png" alt="Dashboard">
+      </button>
+      <button class="sidebar-button" id="leaderboard-btn">
+        <img src="images/leaderboard.png" alt="Leaderboard">
+      </button>
+      <button class="sidebar-button" id="challenge-btn">
+        <img src="images/1vs1.png" alt="Challenge">
+      </button>
+    </aside>
+
+    <main class="main-content">
+      <div class="title-block">
+        
+        <h1 class="main-title">MotionLearn</h1>
+        <p class="subtitle">Make your doubt Clear</p>
+      </div>
+      <h2 class="badges-title-overlay">Badges & Achievements</h2>
+      <div class="subject-selection">
+        <button class="subject-button" data-subject="english" aria-label="English">
+          <div class="book-image-container">
+            <img src="images/book-english.png" alt="English Closed" class="book-closed">
+            <img src="images/page-english.png" alt="English Open" class="book-open">
+          </div>
+        </button>
+        <button class="subject-button" data-subject="science" aria-label="Science">
+          <div class="book-image-container">
+            <img src="images/book-science.png" alt="Science Closed" class="book-closed">
+            <img src="images/page-science.png" alt="Science Open" class="book-open">
+          </div>
+        </button>
+        <button class="subject-button" data-subject="maths" aria-label="Maths">
+          <div class="book-image-container">
+            <img src="images/book-maths.png" alt="Maths Closed" class="book-closed">
+            <img src="images/page-maths.png" alt="Maths Open" class="book-open">
+          </div>
+        </button>
+      </div>
+      <button class="start-button">Start</button>
+    </main>
+
+    <aside class="right-sidebar">
+      <h3 class="sidebar-title">Badges & Achievements</h3>
+      
+      <div class="achievements-list">
+        <!-- Achievement Item 1 -->
+        <div class="achievement-item" style="--progress: 60%;">
+          <button class="claim-button new-design">Claim</button>
+        </div>
+        <!-- Achievement Item 2 -->
+        <div class="achievement-item" style="--progress: 35%;">
+          <button class="claim-button new-design">Claim</button>
+        </div>
+        <!-- Achievement Item 3 -->
+        <div class="achievement-item is-claimable" style="--progress: 100%;">
+          <button class="claim-button new-design">Claim</button>
+        </div>
+        <!-- Achievement Item 4 -->
+        <div class="achievement-item" style="--progress: 15%;">
+          <button class="claim-button new-design">Claim</button>
+        </div>
+      </div>
+      <div class="progress-circle" id="progress-circle" aria-label="Level progress">
+        <svg viewBox="0 0 120 120" class="circle-svg">
+          <circle class="circle-track" cx="60" cy="60" r="54"></circle>
+          <circle class="circle-fill" cx="60" cy="60" r="54"></circle>
+        </svg>
+        <div class="circle-percent" id="progress-pct">0%</div>
+      </div>
+
+      <div class="subject-switcher" aria-label="Subject selector">
+        <button class="switch-arrow left" aria-label="Previous subject">◀</button>
+        <span class="subject-label" id="sidebar-subject-label">English</span>
+        <button class="switch-arrow right" aria-label="Next subject">▶</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+    // Supabase configuration
+    const supabaseUrl = 'https://jxxdiunezswwcwcwcjoz.supabase.co'
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eGRpdW5lenN3d2N3Y3djam96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzI5OTQsImV4cCI6MjA4Nzc0ODk5NH0.TivXn0Ks1BwM4alzZVl_m5fR7Ayrgbg_Rqh1rKz7zYU'
+
+    // Initialize Supabase
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+    // Try to load user info if logged in (no redirect if not)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const user = session.user
+      console.log('User authenticated:', user.email)
+
+      const userNameElement = document.querySelector('.user-name')
+      if (userNameElement && user.user_metadata?.full_name) {
+        userNameElement.textContent = user.user_metadata.full_name
+      } else if (userNameElement && user.email) {
+        userNameElement.textContent = user.email.split('@')[0]
+      }
+    }
+
+    // Logout functionality
+    const logoutBtn = document.getElementById('logout-btn')
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await supabase.auth.signOut()
+          localStorage.removeItem('currentUser')
+          localStorage.removeItem('selectedModule')
+          localStorage.removeItem('selectedLevel')
+          localStorage.removeItem('selectedAvatar')
+          window.location.href = '/'
+        } catch (error) {
+          console.error('Error during logout:', error)
+          window.location.href = '/'
+        }
+      })
+    }
+  </script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
+
+
