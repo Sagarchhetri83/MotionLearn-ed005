@@ -18,6 +18,9 @@ subjectButtons.forEach(button => {
     if (selectedSubject === 'science') {
       window.location.href = 'science/science-select.html';
     }
+    if (selectedSubject === 'technology') {
+      window.location.href = 'coding/index.html';
+    }
   });
 });
 
@@ -168,6 +171,11 @@ if (startButton) {
       // Science → show sub-module picker (Physics / Chemistry / Biology)
       if (selected === 'science') {
         window.location.href = 'science/science-select.html';
+        return;
+      }
+      // Technology → route to the coding module
+      if (selected === 'technology') {
+        window.location.href = 'coding/index.html';
         return;
       }
       // Route to the 2D game module in public/game-module for maths

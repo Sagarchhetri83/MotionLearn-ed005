@@ -1,0 +1,47 @@
+commit d5f4e9a675c79c9639f0888d1b2ab249552dbb3e
+Author: Sagarchhetri83 <sagarchhetri1243@gmail.com>
+Date:   Fri Feb 27 20:28:39 2026 +0530
+
+    maths modules completed
+
+3D_MOTION_MATH_QUICKSTART.md
+Frontend/index.html
+Frontend/package-lock.json
+Frontend/package.json
+Frontend/public/dashboard.html
+Frontend/public/dashboard.js
+Frontend/public/game-module/error.txt
+Frontend/public/game-module/index.html
+Frontend/public/game-module/out.txt
+Frontend/public/game-module/script.js
+Frontend/public/game-module/style.css
+Frontend/public/images/book-technology.png
+Frontend/public/learning-game.css
+Frontend/public/learning-game.html
+Frontend/public/learning-game.js
+Frontend/src/App.jsx
+Frontend/src/games/BaseGame.js
+Frontend/src/games/GameManager.js
+Frontend/src/games/README.md
+Frontend/src/games/index.js
+Frontend/src/games/modules/AlphabetCatchGame.js
+Frontend/src/games/modules/MOTION_MATH_README.md
+Frontend/src/games/modules/MathChallengeGame.js
+Frontend/src/games/modules/MotionMathGame.js
+Frontend/src/games/utils/GestureDetector.js
+Frontend/src/games/utils/ProgressManager.js
+Frontend/src/games/utils/ScoreManager.js
+Frontend/src/games/utils/StemQuestionEngine.js
+Frontend/src/modules/motion-math/GestureController.js
+Frontend/src/modules/motion-math/LevelManager.js
+Frontend/src/modules/motion-math/MotionMath.css
+Frontend/src/modules/motion-math/MotionMathGame.jsx
+Frontend/src/modules/motion-math/ProgressManager.js
+Frontend/src/modules/motion-math/PuzzleBuilder.js
+Frontend/src/modules/motion-math/QuestionEngine.js
+Frontend/src/modules/motion-math/README_3D_MOTION_MATH.md
+Frontend/src/modules/motion-math/ScoreManager.js
+Frontend/src/modules/motion-math/ThreeScene.js
+MOTION_MATH_BUILD_COMPLETE.md
+QUICKSTART_MOTION_MATH.md
+cspell.json
