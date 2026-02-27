@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotionLearn – Science Module</title>
+    <meta name="description" content="Choose your Science module: Physics, Chemistry, or Biology.">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('../images/background-dashboard.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #0d1117;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── TOP BAR ─────────────────────────── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            height: 68px;
+            background: rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(9, 232, 253, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(9, 232, 253, 0.1);
+            border: 1px solid rgba(9, 232, 253, 0.3);
+            border-radius: 14px;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #09E8FD;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .back-btn:hover {
+            background: rgba(9, 232, 253, 0.22);
+            box-shadow: 0 0 16px rgba(9, 232, 253, 0.4);
+            transform: translateX(-2px);
+        }
+
+        .back-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .topbar-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .topbar-title h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #09E8FD;
+            text-shadow: 0 0 16px rgba(9, 232, 253, 0.7);
+            line-height: 1;
+        }
+
+        .topbar-title p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .topbar-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.12);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 14px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+
+        /* ── HERO HEADING ─────────────────────── */
+        .hero {
+            text-align: center;
+            padding: 10px 24px 8px;
+            animation: fadeInDown .5s ease both;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #09E8FD;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: rgba(9, 232, 253, 0.1);
+            border: 1px solid rgba(9, 232, 253, 0.3);
+            border-radius: 99px;
+            padding: 5px 14px;
+            text-shadow: 0 0 8px rgba(9, 232, 253, 0.5);
+        }
+
+        .hero h2 {
+            font-size: clamp(15px, 2vw, 20px);
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(9, 232, 253, 0.3);
+        }
+
+        .hero h2 span {
+            color: #09E8FD;
+            text-shadow: 0 0 14px rgba(9, 232, 253, 0.8);
+        }
+
+        .hero p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 500;
+        }
+
+        /* ── POSTER GRID ─────────────────────── */
+        .posters-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 32px 28px;
+        }
+
+        .posters-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 780px;
+            width: 100%;
+        }
+
+        /* 16:9 poster card */
+        .poster-card {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            min-height: 260px;
+            border-radius: 22px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), box-shadow .3s ease, border-color .3s ease;
+            animation: fadeInUp .5s ease both;
+            text-decoration: none;
+        }
+
+        .poster-card:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .poster-card:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .poster-card:nth-child(3) {
+            animation-delay: .25s;
+        }
+
+        .poster-card:hover {
+            transform: translateY(-10px) scale(1.03);
+        }
+
+        .poster-card.physics:hover {
+            border-color: #09E8FD;
+            box-shadow: 0 20px 60px rgba(9, 232, 253, 0.45);
+        }
+
+        .poster-card.chemistry:hover {
+            border-color: #22c55e;
+            box-shadow: 0 20px 60px rgba(34, 197, 94, 0.45);
+        }
+
+        .poster-card.biology:hover {
+            border-color: #f472b6;
+            box-shadow: 0 20px 60px rgba(244, 114, 182, 0.45);
+        }
+
+        .poster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .4s ease;
+        }
+
+        .poster-card:hover .poster-img {
+            transform: scale(1.06);
+        }
+
+        /* Glass overlay always visible at bottom */
+        .poster-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top,
+                    rgba(0, 0, 0, 0.82) 0%,
+                    rgba(0, 0, 0, 0.3) 45%,
+                    transparent 70%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px 24px;
+            transition: background .3s;
+        }
+
+        .poster-card:hover .poster-overlay {
+            background: linear-gradient(to top,
+                    rgba(0, 0, 0, 0.88) 0%,
+                    rgba(0, 0, 0, 0.35) 50%,
+                    transparent 70%);
+        }
+
+        .poster-subject-icon {
+            font-size: 32px;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+
+        .poster-title {
+            font-size: clamp(18px, 2.5vw, 26px);
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .physics .poster-title {
+            color: #09E8FD;
+            text-shadow: 0 0 16px rgba(9, 232, 253, 0.8);
+        }
+
+        .chemistry .poster-title {
+            color: #22c55e;
+            text-shadow: 0 0 16px rgba(34, 197, 94, 0.8);
+        }
+
+        .biology .poster-title {
+            color: #f472b6;
+            text-shadow: 0 0 16px rgba(244, 114, 182, 0.8);
+        }
+
+        .poster-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .poster-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: .5px;
+            width: fit-content;
+        }
+
+        .physics .poster-cta {
+            background: linear-gradient(135deg, #09E8FD, #0ea5e9);
+            color: #000;
+        }
+
+        .chemistry .poster-cta {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+
+        .biology .poster-cta {
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            color: #fff;
+        }
+
+        .poster-cta:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* Badge top-right */
+        .poster-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            backdrop-filter: blur(8px);
+            letter-spacing: .5px;
+        }
+
+        .physics .poster-badge {
+            background: rgba(9, 232, 253, 0.18);
+            color: #09E8FD;
+            border: 1px solid rgba(9, 232, 253, 0.4);
+        }
+
+        .chemistry .poster-badge {
+            background: rgba(34, 197, 94, 0.18);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+
+        .biology .poster-badge {
+            background: rgba(244, 114, 182, 0.18);
+            color: #f472b6;
+            border: 1px solid rgba(244, 114, 182, 0.4);
+        }
+
+        /* Floating particles decoration */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: .6;
+            }
+
+            90% {
+                opacity: .3;
+            }
+
+            100% {
+                transform: translateY(-100vh) scale(.5);
+                opacity: 0;
+            }
+        }
+
+        /* ── ANIMATIONS ──────────────────────── */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── RESPONSIVE ──────────────────────── */
+        @media (max-width: 1000px) {
+            .posters-grid {
+                grid-template-columns: 1fr;
+                max-width: 640px;
+                gap: 14px;
+            }
+
+            .posters-wrap {
+                padding: 8px 16px 16px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 0 14px;
+            }
+
+            .hero {
+                padding: 8px 14px 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <a href="../dashboard.html" class="back-btn" id="back-to-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+        </a>
+        <div class="topbar-title">
+            <h1>⚗️ Science Module</h1>
+            <p>Choose your subject to begin</p>
+        </div>
+        <div class="topbar-badge">🔬 3 Modules</div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-tag">🚀 Select Your Module</div>
+        <h2>Explore the World of <span>Science</span></h2>
+        <p>Pick a subject below to start learning — each module has 30 levels to master!</p>
+    </section>
+
+    <!-- POSTER CARDS -->
+    <section class="posters-wrap">
+        <div class="posters-grid">
+
+            <!-- PHYSICS -->
+            <a class="poster-card physics" href="../physics/index.html" id="physics-card"
+                onclick="selectModule('physics')" aria-label="Start Physics module">
+                <img class="poster-img" src="../images/physics-poster.png" alt="Physics Module">
+                <div class="poster-overlay">
+                    <div class="poster-subject-icon">⚛️</div>
+                    <div class="poster-title">Physics</div>
+                    <div class="poster-desc">Forces, motion, energy &amp; the laws that govern our universe</div>
+                    <button class="poster-cta">Start Module →</button>
+                </div>
+            </a>
+
+            <!-- CHEMISTRY -->
+            <a class="poster-card chemistry" href="chemistry.html" id="chemistry-card"
+                onclick="selectModule('chemistry')" aria-label="Start Chemistry module">
+                <img class="poster-img" src="../images/chemistry-poster.png" alt="Chemistry Module">
+                <div class="poster-overlay">
+                    <div class="poster-subject-icon">🧪</div>
+                    <div class="poster-title">Chemistry</div>
+                    <div class="poster-desc">Elements, reactions, molecules &amp; the magic of matter</div>
+                    <button class="poster-cta">Start Module →</button>
+                </div>
+            </a>
+
+            <!-- BIOLOGY -->
+            <a class="poster-card biology" href="biology.html" id="biology-card" onclick="selectModule('biology')"
+                aria-label="Start Biology module">
+                <img class="poster-img" src="../images/biology-poster.png" alt="Biology Module">
+                <div class="poster-overlay">
+                    <div class="poster-subject-icon">🧬</div>
+                    <div class="poster-title">Biology</div>
+                    <div class="poster-desc">Life, cells, ecosystems &amp; the science of living things</div>
+                    <button class="poster-cta">Start Module →</button>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- FLOATING PARTICLES -->
+    <script>
+        // Save selected sub-module to localStorage
+        function selectModule(subject) {
+            try { localStorage.setItem('selectedModule', subject); } catch (_) { }
+        }
+
+        // Create floating particles for atmosphere
+        const colors = ['#09E8FD', '#FFD700', '#22c55e', '#f472b6', '#c084fc'];
+        for (let i = 0; i < 18; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 6 + 3;
+            p.style.cssText = `
+        width:${size}px; height:${size}px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        left:${Math.random() * 100}%;
+        bottom:${Math.random() * 20}%;
+        animation-duration:${Math.random() * 8 + 6}s;
+        animation-delay:${Math.random() * 6}s;
+        filter: blur(1px);
+        box-shadow: 0 0 6px currentColor;
+      `;
+            document.body.appendChild(p);
+        }
+    </script>
+
+</body>
+
+</html>

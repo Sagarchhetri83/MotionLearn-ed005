@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Lab – Hand Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw
+        }
+
+        /* ── FULL SCREEN CAMERA ── */
+        #webcam {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            z-index: 1
+        }
+
+        #trackCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Dim overlay so UI stays readable */
+        .bg-dim {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            background: rgba(0, 0, 0, 0.45);
+            pointer-events: none
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(9, 232, 253, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(9, 232, 253, 0.12);
+            border: 1px solid rgba(9, 232, 253, 0.35);
+            color: #09E8FD;
+            padding: 6px 14px;
+            border-radius: 9px;
+            font: 600 12px 'Poppins', sans-serif;
+            text-decoration: none;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .back-btn:hover {
+            background: rgba(9, 232, 253, 0.25);
+            box-shadow: 0 0 12px rgba(9, 232, 253, 0.4)
+        }
+
+        .back-btn svg {
+            width: 13px;
+            height: 13px
+        }
+
+        .topbar-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center
+        }
+
+        .lab-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #09E8FD;
+            text-shadow: 0 0 14px rgba(9, 232, 253, 0.8);
+            line-height: 1
+        }
+
+        .lab-sub {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 500
+        }
+
+        .topbar-right {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .tb-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font: 700 11px 'Poppins', sans-serif;
+            cursor: pointer;
+            border: 1px solid;
+            transition: .2s
+        }
+
+        .tb-cam {
+            background: rgba(255, 215, 0, 0.12);
+            border-color: rgba(255, 215, 0, 0.4);
+            color: #FFD700
+        }
+
+        .tb-reset {
+            background: rgba(255, 100, 100, 0.1);
+            border-color: rgba(255, 100, 100, 0.4);
+            color: #ff6b6b
+        }
+
+        .tb-btn:hover {
+            filter: brightness(1.35)
+        }
+
+        .pinch-badge {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid rgba(9, 232, 253, 0.3);
+            color: rgba(9, 232, 253, 0.6);
+            background: rgba(9, 232, 253, 0.07);
+            transition: .3s
+        }
+
+        .pinch-badge.on {
+            color: #09E8FD;
+            border-color: #09E8FD;
+            background: rgba(9, 232, 253, 0.18);
+            box-shadow: 0 0 10px rgba(9, 232, 253, 0.4)
+        }
+
+        /* ── LEFT PANEL: CHEMICALS ── */
+        .chem-panel {
+            position: fixed;
+            top: 52px;
+            left: 0;
+            bottom: 0;
+            width: 180px;
+            z-index: 20;
+            background: rgba(5, 10, 20, 0.75);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(9, 232, 253, 0.15);
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .panel-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0
+        }
+
+        /* Element card */
+        .elem-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: 13px;
+            border: 1px solid transparent;
+            cursor: grab;
+            user-select: none;
+            transition: .22s;
+            flex-shrink: 0
+        }
+
+        .elem-card:hover {
+            transform: translateX(5px)
+        }
+
+        .elem-card:active {
+            cursor: grabbing;
+            opacity: .7
+        }
+
+        .elem-card.picked {
+            opacity: .35;
+            border-style: dashed
+        }
+
+        /* Periodic table style symbol box */
+        .sym-box {
+            width: 46px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1.5px solid;
+            gap: 0
+        }
+
+        .sym-num {
+            font-size: 9px;
+            font-weight: 600;
+            opacity: .7;
+            line-height: 1
+        }
+
+        .sym-letter {
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.1
+        }
+
+        .sym-name {
+            font-size: 7.5px;
+            font-weight: 600;
+            opacity: .6;
+            line-height: 1
+        }
+
+        .elem-info {
+            flex: 1;
+            min-width: 0
+        }
+
+        .elem-fullname {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .elem-formula {
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1.3
+        }
+
+        .elem-state {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500
+        }
+
+        /* Guide at bottom of panel */
+        .guide {
+            margin-top: auto;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 9px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 2;
+            flex-shrink: 0
+        }
+
+        /* ── CENTER: BEAKER ── */
+        .beaker-wrap {
+            position: fixed;
+            z-index: 15;
+            bottom: 24px;
+            left: calc(180px + (100vw - 430px) / 2);
+            transform: translateX(-50%)
+        }
+
+        .beaker-label {
+            text-align: center;
+            font-size: 10px;
+            color: rgba(9, 232, 253, 0.6);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px
+        }
+
+        .drop-ring {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px dashed rgba(9, 232, 253, 0.3);
+            top: 46%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: .3s;
+            z-index: 5
+        }
+
+        .drop-ring.hot {
+            border-color: #09E8FD;
+            animation: pulse .8s ease-in-out infinite;
+            box-shadow: 0 0 24px rgba(9, 232, 253, 0.5)
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.08)
+            }
+        }
+
+        /* ── REACTION PANEL (right) ── */
+        .rxn-panel {
+            position: fixed;
+            top: 52px;
+            right: 0;
+            width: 250px;
+            z-index: 20;
+            background: rgba(5, 10, 20, 0.75);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(9, 232, 253, 0.15);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .rp-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 11px;
+            padding: 10px
+        }
+
+        .rp-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 7px
+        }
+
+        /* Beaker contents */
+        .bk-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            min-height: 26px
+        }
+
+        .bk-pill {
+            padding: 3px 9px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 800;
+            border: 1px solid
+        }
+
+        /* Reaction result */
+        .rxn-eq {
+            font-size: 12px;
+            font-weight: 800;
+            color: #FFD700;
+            padding: 6px 8px;
+            background: rgba(255, 215, 0, 0.07);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 7px;
+            margin-bottom: 5px;
+            word-break: break-word
+        }
+
+        .rxn-type {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            border: 1px solid;
+            display: inline-block;
+            margin-bottom: 5px
+        }
+
+        .rxn-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6
+        }
+
+        .narr {
+            padding: 8px;
+            background: rgba(9, 232, 253, 0.05);
+            border: 1px solid rgba(9, 232, 253, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            font-style: italic;
+            transition: .3s
+        }
+
+        .narr.on {
+            border-color: rgba(9, 232, 253, 0.45);
+            box-shadow: 0 0 10px rgba(9, 232, 253, 0.12)
+        }
+
+        /* ── FLOAT DRAG ── */
+        #floater {
+            position: fixed;
+            display: none;
+            pointer-events: none;
+            z-index: 9999;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 13px;
+            border: 2px solid;
+            background: rgba(5, 10, 20, 0.92);
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 0 28px rgba(9, 232, 253, 0.35)
+        }
+
+        #floater.on {
+            display: flex
+        }
+
+        #fEmo {
+            font-size: 18px
+        }
+
+        #fSym {
+            font-size: 17px;
+            font-weight: 900
+        }
+
+        /* ── EFFECT CANVAS ── */
+        #effectCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 16;
+            pointer-events: none
+        }
+
+        /* ── REACTION BANNER ── */
+        .rxn-banner {
+            position: fixed;
+            top: 52px;
+            left: 180px;
+            right: 250px;
+            z-index: 19;
+            padding: 7px 16px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 38px
+        }
+
+        .banner-eq {
+            font-size: 13px;
+            font-weight: 800;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            opacity: 0;
+            transition: .3s
+        }
+
+        .banner-eq.on {
+            opacity: 1
+        }
+
+        .banner-type {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 99px;
+            border: 1px solid;
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- FULL SCREEN CAMERA -->
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="trackCanvas"></canvas>
+    <div class="bg-dim"></div>
+
+    <!-- EFFECT CANVAS (particles) -->
+    <canvas id="effectCanvas"></canvas>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <a href="science-select.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>Back
+        </a>
+        <div class="topbar-center">
+            <div class="lab-title">⚗️ Virtual Chemistry Lab</div>
+            <div class="lab-sub">Drag elements into the beaker • Mix & React!</div>
+        </div>
+        <div class="topbar-right">
+            <div class="pinch-badge" id="pinchBadge">✋ Hand Off</div>
+            <button class="tb-btn tb-cam" onclick="toggleCam()" id="camBtn">📷 Stop Tracking</button>
+            <button class="tb-btn tb-reset" onclick="resetLab()">🔄 Reset</button>
+        </div>
+    </header>
+
+    <!-- REACTION BANNER -->
+    <div class="rxn-banner">
+        <div class="banner-eq" id="bannerEq">Add elements from the left panel → drag to beaker</div>
+        <div class="banner-type" id="bannerType"></div>
+    </div>
+
+    <!-- LEFT: CHEMICALS -->
+    <div class="chem-panel" id="chemPanel">
+        <div class="panel-title">⚗️ Elements</div>
+        <div id="elemList"></div>
+        <div class="guide">
+            🖱 <b style="color:rgba(255,255,255,.6)">Mouse:</b> Drag card → beaker<br>
+            👌 <b style="color:rgba(255,255,255,.6)">Hand:</b> Pinch + move → release<br>
+            ✌️ <b style="color:rgba(255,255,255,.6)">2-Finger Pinch:</b> Hold 1s → clear beaker<br>
+            🧪 Add 2 elements that react!
+        </div>
+    </div>
+
+    <!-- CENTER: BEAKER -->
+    <div class="beaker-wrap">
+        <div class="beaker-label">⬇ Drop Here</div>
+        <div style="position:relative">
+            <svg width="170" height="230" viewBox="0 0 170 230" id="bkSvg"
+                style="filter:drop-shadow(0 0 22px rgba(9,232,253,0.35))">
+                <defs>
+                    <clipPath id="lc">
+                        <polygon points="30,22 140,22 150,205 20,205" />
+                    </clipPath>
+                    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+                        <stop id="ls1" offset="0%" stop-color="#4fc3f7" stop-opacity=".75" />
+                        <stop id="ls2" offset="100%" stop-color="#0263a8" stop-opacity=".9" />
+                    </linearGradient>
+                    <linearGradient id="gg" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="rgba(9,232,253,.28)" />
+                        <stop offset="55%" stop-color="rgba(9,232,253,.04)" />
+                        <stop offset="100%" stop-color="rgba(9,232,253,.16)" />
+                    </linearGradient>
+                </defs>
+                <!-- Liquid -->
+                <g clip-path="url(#lc)">
+                    <rect id="liqR" x="20" y="205" width="130" height="0" fill="url(#lg)" />
+                </g>
+                <!-- Glass body -->
+                <polygon points="30,22 140,22 150,205 20,205" fill="url(#gg)" stroke="rgba(9,232,253,.6)"
+                    stroke-width="2" fill-opacity=".12" />
+                <!-- Rim -->
+                <rect x="26" y="15" width="118" height="9" rx="4.5" fill="rgba(9,232,253,.4)"
+                    stroke="rgba(9,232,253,.65)" stroke-width="1.5" />
+                <!-- tick marks -->
+                <line x1="146" y1="75" x2="138" y2="75" stroke="rgba(9,232,253,.4)" stroke-width="1" />
+                <line x1="146" y1="115" x2="138" y2="115" stroke="rgba(9,232,253,.4)" stroke-width="1" />
+                <line x1="146" y1="155" x2="138" y2="155" stroke="rgba(9,232,253,.4)" stroke-width="1" />
+                <text x="149" y="78" fill="rgba(9,232,253,.45)" font-size="7" font-family="Poppins">75</text>
+                <text x="149" y="118" fill="rgba(9,232,253,.45)" font-size="7" font-family="Poppins">50</text>
+                <text x="149" y="158" fill="rgba(9,232,253,.45)" font-size="7" font-family="Poppins">25</text>
+                <!-- Shine -->
+                <path d="M38 26 L36 196" stroke="rgba(255,255,255,.12)" stroke-width="5" stroke-linecap="round" />
+            </svg>
+            <!-- Drop zone ring -->
+            <div class="drop-ring" id="dropRing"></div>
+        </div>
+    </div>
+
+    <!-- RIGHT: REACTION INFO -->
+    <div class="rxn-panel">
+        <div class="rp-section">
+            <div class="rp-title">🧫 In Beaker</div>
+            <div class="bk-pills" id="bkPills"><span
+                    style="font-size:9px;color:rgba(255,255,255,.2);font-style:italic">Empty</span></div>
+        </div>
+        <div class="rp-section" style="flex:1;overflow-y:auto">
+            <div class="rp-title">⚡ Reaction</div>
+            <div id="rxnCard">
+                <div style="font-size:9.5px;color:rgba(255,255,255,.25);font-style:italic">Waiting...</div>
+            </div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-title">🔊 Narration</div>
+            <div class="narr" id="narrBox">Add elements to the beaker to hear the reaction explained.</div>
+        </div>
+    </div>
+
+    <!-- FLOATING DRAG ELEMENT -->
+    <div id="floater"><span id="fEmo"></span><span id="fSym"></span></div>
+
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ── ELEMENTS (only 6 as requested) ──────────────────────────────────────
+        const ELEMS = [
+            { id: 'C', sym: 'C', num: 6, name: 'Carbon', state: 'Solid', e: '⬛', color: '#90a4ae', dark: '#546e7a' },
+            { id: 'O2', sym: 'O₂', num: 8, name: 'Oxygen', state: 'Gas', e: '🔵', color: '#81d4fa', dark: '#0288d1' },
+            { id: 'H2', sym: 'H₂', num: 1, name: 'Hydrogen', state: 'Gas', e: '⚪', color: '#e1f5fe', dark: '#4fc3f7' },
+            { id: 'Na', sym: 'Na', num: 11, name: 'Sodium', state: 'Solid', e: '🟡', color: '#fff59d', dark: '#f9a825' },
+            { id: 'Cl', sym: 'Cl₂', num: 17, name: 'Chloride', state: 'Gas', e: '🟢', color: '#a5d6a7', dark: '#388e3c' },
+            { id: 'H2O', sym: 'H₂O', num: '-', name: 'Water', state: 'Liquid', e: '💧', color: '#4fc3f7', dark: '#0277bd' },
+        ];
+
+        // ── REACTIONS ────────────────────────────────────────────────────────────
+        const RXN = {
+            'C+O2': { eq: 'C + O₂ → CO₂', name: 'Carbon Combustion', type: 'Combustion', tc: '#ff9800', ph: 5, temp: 120, liq: ['#b0bec5', '#78909c'], desc: 'Carbon burns in oxygen producing Carbon Dioxide — the same reaction as burning wood or coal!', fx: 'flame', speech: "Carbon reacts with Oxygen in a combustion reaction! Carbon burns to produce Carbon Dioxide gas. This is what happens when you burn wood!" },
+            'H2+O2': { eq: '2H₂ + O₂ → 2H₂O', name: 'Water Synthesis', type: 'Synthesis', tc: '#2196f3', ph: 7, temp: 90, liq: ['#4fc3f7', '#0288d1'], desc: 'Hydrogen gas burns in oxygen to form Water. This is how rockets are powered — it\'s incredibly energetic!', fx: 'spark', speech: "Hydrogen and Oxygen combine in a synthesis reaction to form Water! This reaction powers rockets and fuel cells." },
+            'H2+Cl': { eq: 'H₂ + Cl₂ → 2HCl', name: 'HCl Formation', type: 'Combination', tc: '#9c27b0', ph: 2, temp: 60, liq: ['#ce93d8', '#ab47bc'], desc: 'Hydrogen and Chlorine combine to form Hydrochloric Acid — a very strong acid used in many industrial processes.', fx: 'neutralize', speech: "Hydrogen and Chlorine gas combine to form Hydrochloric Acid! HCl is a strong acid with many industrial uses." },
+            'Na+Cl': { eq: '2Na + Cl₂ → 2NaCl', name: 'Table Salt Formation', type: 'Combination', tc: '#FFD700', ph: 7, temp: 40, liq: ['#fff59d', '#ffee58'], desc: 'Sodium metal reacts vigorously with Chlorine gas to form Sodium Chloride — ordinary table salt!', fx: 'explosion', speech: "Sodium reacts with Chlorine to form Sodium Chloride — that's common table salt! This reaction is very vigorous between the two elements." },
+            'H2O+Na': { eq: '2Na + 2H₂O → 2NaOH + H₂↑', name: 'Sodium in Water', type: 'Vigorous Reaction', tc: '#ff6b6b', ph: 13, temp: 85, liq: ['#80cbc4', '#a5d6a7'], desc: 'Sodium reacts explosively with water, producing Sodium Hydroxide and Hydrogen gas that can ignite!', fx: 'explosion', speech: "Sodium reacts violently with water! This produces Sodium Hydroxide and Hydrogen gas that can catch fire. Never put sodium in water!" },
+        };
+
+        function rxnKey(arr) {
+            const norm = arr.map(i => i === 'H2O' ? 'H2O' : i).sort();
+            const all = Object.keys(RXN);
+            for (const k of all) { const kp = k.split('+').sort().join('+'); if (norm.join('+') === kp) return k; }
+            // Try subsets of 2
+            for (let i = 0; i < norm.length; i++) for (let j = i + 1; j < norm.length; j++) {
+                const sub = [norm[i], norm[j]].join('+');
+                const rev = [norm[j], norm[i]].join('+');
+                if (RXN[sub]) return sub; if (RXN[rev]) return rev;
+            }
+            return null;
+        }
+
+        // ── STATE ────────────────────────────────────────────────────────────────
+        let beaker = [], liqH = 0, curRxn = null, holding = null, camOn = false, pinched = false;
+        let mpCamera = null, mpHands = null, twoFingerStart = null;
+
+        // ── BUILD ELEMENT LIST ───────────────────────────────────────────────────
+        function buildElems() {
+            const list = document.getElementById('elemList');
+            list.innerHTML = '';
+            ELEMS.forEach(el => {
+                const card = document.createElement('div');
+                card.className = 'elem-card'; card.dataset.id = el.id;
+                card.style.cssText = `border-color:${el.color}30;background:rgba(0,0,0,0.25)`;
+                card.innerHTML = `
+      <div class="sym-box" style="background:${el.dark}22;border-color:${el.color}55;color:${el.color}">
+        <div class="sym-num">${el.num}</div>
+        <div class="sym-letter">${el.id === 'H2O' ? 'H₂O' : el.id === 'O2' ? 'O' : el.id === 'H2' ? 'H' : el.id === 'Cl' ? 'Cl' : el.id}</div>
+        <div class="sym-name">${el.name.split(' ')[0].substring(0, 5)}</div>
+      </div>
+      <div class="elem-info">
+        <div class="elem-fullname">${el.name}</div>
+        <div class="elem-formula" style="color:${el.color}">${el.sym}</div>
+        <div class="elem-state">${el.state}</div>
+      </div>`;
+                card.addEventListener('mousedown', e => { e.preventDefault(); startMouseDrag(el, e); });
+                list.appendChild(card);
+            });
+        }
+
+        // ── MOUSE DRAG ──────────────────────────────────────────────────────────
+        function startMouseDrag(elem, e) {
+            pickUp(elem);
+            const move = ev => { setFloatPos(ev.clientX, ev.clientY); hoverBeaker(ev.clientX, ev.clientY); };
+            const up = ev => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); tryPour(ev.clientX, ev.clientY); };
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+        }
+
+        function pickUp(elem) {
+            holding = elem;
+            const f = document.getElementById('floater');
+            document.getElementById('fEmo').textContent = elem.e;
+            document.getElementById('fSym').textContent = elem.sym;
+            f.style.borderColor = elem.color; f.style.color = elem.color;
+            f.style.boxShadow = `0 0 24px ${elem.color}55`;
+            f.classList.add('on');
+            document.querySelectorAll('.elem-card').forEach(c => { if (c.dataset.id === elem.id) c.classList.add('picked'); });
+        }
+
+        function setFloatPos(x, y) { const f = document.getElementById('floater'); f.style.left = (x - 45) + 'px'; f.style.top = (y - 28) + 'px'; }
+
+        function hoverBeaker(x, y) {
+            const ring = document.getElementById('dropRing');
+            const r = ring.getBoundingClientRect();
+            const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+            ring.classList.toggle('hot', holding && Math.hypot(x - cx, y - cy) < 110);
+        }
+
+        function tryPour(x, y) {
+            const ring = document.getElementById('dropRing');
+            const r = ring.getBoundingClientRect();
+            const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+            if (holding && Math.hypot(x - cx, y - cy) < 115) pourIn(holding);
+            dropHeld();
+        }
+
+        function dropHeld() {
+            document.getElementById('floater').classList.remove('on');
+            document.getElementById('dropRing').classList.remove('hot');
+            document.querySelectorAll('.elem-card').forEach(c => c.classList.remove('picked'));
+            holding = null;
+        }
+
+        // ── POUR INTO BEAKER ────────────────────────────────────────────────────
+        function pourIn(elem) {
+            if (beaker.length >= 4) { narr('Beaker is full! Click Reset to start over.'); return; }
+            beaker.push(elem.id);
+            liqH = Math.min(180, liqH + 38);
+            animLiq(liqH, elem.color);
+            dropParticles(elem);
+            updatePills();
+            // Announce the chemical added
+            narr(`Added ${elem.name}! Chemical formula: ${elem.sym.replace(/₂/g,'2').replace(/₃/g,'3')}.`);
+            // Short delay so narration finishes before reaction speech fires
+            setTimeout(() => checkRxn(), 1800);
+        }
+
+        function animLiq(target, col) {
+            const r = document.getElementById('liqR');
+            let h = parseFloat(r.getAttribute('height')) || 0;
+            const step = () => { h = Math.min(target, h + 5); r.setAttribute('height', h); r.setAttribute('y', 205 - h); if (h < target) requestAnimationFrame(step); };
+            requestAnimationFrame(step);
+        }
+
+        function dropParticles(elem) {
+            const cv = document.getElementById('effectCanvas'); cv.width = innerWidth; cv.height = innerHeight;
+            const ctx = cv.getContext('2d');
+            const bw = document.getElementById('bkSvg');
+            const br = bw.getBoundingClientRect();
+            const cx = br.left + br.width / 2, top = br.top + 30;
+            let ps = Array.from({ length: 10 }, () => ({ x: cx + (Math.random() - .5) * 18, y: top, vx: (Math.random() - .5) * 2.5, vy: Math.random() * 6 + 3, r: Math.random() * 5 + 3, a: 1, c: elem.color }));
+            (function loop() {
+                ps.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += .4; p.a -= .025;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.c + h2(p.a); ctx.fill();
+                });
+                ps = ps.filter(p => p.a > 0);
+                if (ps.length) requestAnimationFrame(loop); else ctx.clearRect(0, 0, cv.width, cv.height);
+            })();
+        }
+
+        function checkRxn() {
+            const key = rxnKey(beaker);
+            if (key && RXN[key] && RXN[key] !== curRxn) { curRxn = RXN[key]; fireRxn(curRxn); }
+        }
+
+        function fireRxn(r) {
+            // Liquid color
+            document.getElementById('ls1').setAttribute('stop-color', r.liq[0]);
+            document.getElementById('ls2').setAttribute('stop-color', r.liq[1]);
+            // Banner
+            const be = document.getElementById('bannerEq'); be.textContent = r.eq; be.classList.add('on');
+            const bt = document.getElementById('bannerType');
+            bt.style.cssText = `display:inline-block;color:${r.tc};border-color:${r.tc}55;background:${r.tc}15`;
+            bt.textContent = r.type;
+            // Card
+            document.getElementById('rxnCard').innerHTML = `
+    <div class="rxn-eq">${r.eq}</div>
+    <div class="rxn-type" style="color:${r.tc};border-color:${r.tc}55;background:${r.tc}11">${r.type}</div>
+    <div class="rxn-desc">${r.desc}</div>`;
+            // Effect + narration
+            runFx(r.fx, r.tc);
+            narr(r.speech);
+        }
+
+        function updatePills() {
+            const el = document.getElementById('bkPills');
+            if (!beaker.length) { el.innerHTML = '<span style="font-size:9px;color:rgba(255,255,255,.2);font-style:italic">Empty</span>'; return; }
+            el.innerHTML = beaker.map(id => {
+                const e = ELEMS.find(x => x.id === id);
+                return `<span class="bk-pill" style="color:${e.color};border-color:${e.color}44">${e.sym}</span>`;
+            }).join('');
+        }
+
+        // ── PARTICLE EFFECTS ─────────────────────────────────────────────────────
+        function runFx(type, col) {
+            const cv = document.getElementById('effectCanvas'); cv.width = innerWidth; cv.height = innerHeight;
+            const ctx = cv.getContext('2d');
+            const br = document.getElementById('bkSvg').getBoundingClientRect();
+            const cx = br.left + br.width / 2, cy = br.top + br.height * .55;
+            if (type === 'explosion') {
+                let ps = Array.from({ length: 65 }, () => {
+                    const a = Math.random() * Math.PI * 2, s = Math.random() * 10 + 4;
+                    return { x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - Math.random() * 4, r: Math.random() * 6 + 2, a: 1, c: ['#ff6b6b', '#ffd700', '#ff9800', '#fff591'][~~(Math.random() * 4)] };
+                });
+                (function loop() {
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    ps.forEach(p => {
+                        p.x += p.vx; p.y += p.vy; p.vy += .22; p.a -= .016; p.r *= .98;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.c + h2(p.a); ctx.fill();
+                    });
+                    ps = ps.filter(p => p.a > 0); if (ps.length) requestAnimationFrame(loop); else ctx.clearRect(0, 0, cv.width, cv.height);
+                })();
+            } else if (type === 'flame') {
+                let t = 0;
+                (function loop() {
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    for (let i = 0; i < 5; i++) {
+                        const ox = (Math.random() - .5) * 36, h = 55 + Math.sin(t * .08 + i) * 18;
+                        const g = ctx.createRadialGradient(cx + ox, cy, 0, cx + ox, cy - h, h);
+                        g.addColorStop(0, 'rgba(255,255,80,.9)'); g.addColorStop(.45, 'rgba(255,100,0,.65)'); g.addColorStop(1, 'rgba(255,0,0,0)');
+                        ctx.beginPath(); ctx.ellipse(cx + ox, cy, 18, h, 0, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+                    }
+                    t++; if (t < 130) requestAnimationFrame(loop); else ctx.clearRect(0, 0, cv.width, cv.height);
+                })();
+            } else if (type === 'spark') {
+                let t = 0;
+                (function loop() {
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    if (t % 3 === 0) {
+                        ctx.strokeStyle = `rgba(129,212,250,${.7 - t * .004})`; ctx.lineWidth = 3; ctx.shadowColor = '#81d4fa'; ctx.shadowBlur = 12;
+                        ctx.beginPath(); ctx.moveTo(cx - 50, cy - 80); const mx = cx + (Math.random() - .5) * 50, my = cy + (Math.random() - .5) * 30;
+                        ctx.quadraticCurveTo(mx, my, cx + 50, cy + 80); ctx.stroke(); ctx.shadowBlur = 0;
+                    }
+                    t++; if (t < 100) requestAnimationFrame(loop); else ctx.clearRect(0, 0, cv.width, cv.height);
+                })();
+            } else if (type === 'neutralize') {
+                let t = 0;
+                (function loop() {
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    const g = ctx.createRadialGradient(cx, cy, 5, cx, cy, 100);
+                    const a = ((Math.sin(t * .1) + 1) * .5) * .3;
+                    g.addColorStop(0, `rgba(206,147,216,${a})`); g.addColorStop(1, 'rgba(156,39,176,0)');
+                    ctx.beginPath(); ctx.arc(cx, cy, 100 + Math.sin(t * .15) * 8, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+                    t++; if (t < 150) requestAnimationFrame(loop); else ctx.clearRect(0, 0, cv.width, cv.height);
+                })();
+            }
+        }
+
+        function h2(a) { return Math.floor(Math.max(0, Math.min(1, a)) * 255).toString(16).padStart(2, '0'); }
+
+        // ── SPEECH ───────────────────────────────────────────────────────────────
+        function narr(txt) {
+            speechSynthesis.cancel();
+            const b = document.getElementById('narrBox'); b.textContent = txt; b.classList.add('on');
+            const u = new SpeechSynthesisUtterance(txt); u.rate = .9; u.pitch = 1.05;
+            u.onend = () => b.classList.remove('on');
+            speechSynthesis.speak(u);
+        }
+
+        // ── RESET ────────────────────────────────────────────────────────────────
+        function resetLab() {
+            beaker = []; liqH = 0; curRxn = null; speechSynthesis.cancel();
+            const r = document.getElementById('liqR'); r.setAttribute('height', 0); r.setAttribute('y', 205);
+            document.getElementById('ls1').setAttribute('stop-color', '#4fc3f7');
+            document.getElementById('ls2').setAttribute('stop-color', '#0263a8');
+            document.getElementById('bannerEq').textContent = 'Add elements from the left panel → drag to beaker';
+            document.getElementById('bannerEq').classList.remove('on');
+            document.getElementById('bannerType').style.display = 'none';
+            document.getElementById('rxnCard').innerHTML = '<div style="font-size:9.5px;color:rgba(255,255,255,.25);font-style:italic">Waiting...</div>';
+            document.getElementById('narrBox').textContent = 'Add elements to the beaker to hear the reaction explained.';
+            document.getElementById('narrBox').classList.remove('on');
+            const cv = document.getElementById('effectCanvas'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+            updatePills();
+        }
+
+        // ── MEDIAPIPE ────────────────────────────────────────────────────────────
+        function toggleCam() {
+            camOn = !camOn;
+            const vid = document.getElementById('webcam');
+            const btn = document.getElementById('camBtn');
+            if (camOn) {
+                btn.textContent = '📷 Stop Tracking';
+                vid.style.display = 'block';
+                startMP();
+            } else {
+                btn.textContent = '📷 Start Tracking';
+                if (mpCamera) { mpCamera.stop(); mpCamera = null; }
+                if (vid.srcObject) { vid.srcObject.getTracks().forEach(t => t.stop()); vid.srcObject = null; }
+                document.getElementById('trackCanvas').getContext('2d').clearRect(0, 0, innerWidth, innerHeight);
+                document.getElementById('pinchBadge').textContent = '✋ Hand Off';
+                document.getElementById('pinchBadge').classList.remove('on');
+                dropHeld();
+            }
+        }
+
+        function startMP() {
+            const video = document.getElementById('webcam');
+            const tc = document.getElementById('trackCanvas');
+            tc.width = innerWidth; tc.height = innerHeight;
+            const ctx = tc.getContext('2d');
+
+            mpHands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+            mpHands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: .78, minTrackingConfidence: .72 });
+
+            mpHands.onResults(res => {
+                ctx.clearRect(0, 0, tc.width, tc.height);
+                if (!res.multiHandLandmarks?.length) {
+                    if (pinched) { pinched = false; dropHeld(); }
+                    document.getElementById('pinchBadge').textContent = '🖐 No Hand';
+                    document.getElementById('pinchBadge').classList.remove('on');
+                    return;
+                }
+                const lm = res.multiHandLandmarks[0];
+
+                // ── Coordinate mapping ────────────────────────────────────────────
+                // Video: CSS scaleX(-1) mirrors it (left/right swapped visually)
+                // Canvas: NO CSS flip, so we flip X in JS: (1 - lm.x) * width
+                // This makes landmarks align with the mirrored video
+                const scale = p => ({ x: (1 - p.x) * tc.width, y: p.y * tc.height });
+                const pts = lm.map(scale);
+
+                // Draw connections
+                const CONN = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
+                ctx.strokeStyle = 'rgba(9,232,253,0.45)'; ctx.lineWidth = 2;
+                CONN.forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(pts[a].x, pts[a].y); ctx.lineTo(pts[b].x, pts[b].y); ctx.stroke(); });
+
+                // Draw landmark dots
+                pts.forEach((p, i) => {
+                    ctx.beginPath(); ctx.arc(p.x, p.y, [4, 8].includes(i) ? 8 : 4, 0, Math.PI * 2);
+                    ctx.fillStyle = [4, 8].includes(i) ? '#FFD700' : '#09E8FD'; ctx.fill();
+                });
+
+                // ── Pinch detection: thumb tip(4) + index tip(8) ──────────────────
+                const tdist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+                const isPinched = tdist < 0.09; // lenient threshold for easier pinching
+                // Midpoint between thumb and index as the cursor position
+                const sx = (pts[4].x + pts[8].x) / 2, sy = (pts[4].y + pts[8].y) / 2;
+
+                // Draw pinch cursor ring
+                const pr = isPinched ? 26 : 18;
+                ctx.beginPath(); ctx.arc(sx, sy, pr, 0, Math.PI * 2);
+                ctx.strokeStyle = isPinched ? '#09E8FD' : 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = isPinched ? 3.5 : 2; ctx.stroke();
+                if (isPinched) {
+                    ctx.fillStyle = 'rgba(9,232,253,0.18)'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+                    ctx.fillStyle = '#09E8FD'; ctx.fill();
+                }
+
+                // Badge
+                const badge = document.getElementById('pinchBadge');
+                if (isPinched) { badge.textContent = '👌 Pinching!'; badge.classList.add('on'); }
+                else { badge.textContent = '✋ Open Hand'; badge.classList.remove('on'); }
+
+                // Grab / drag / drop
+                if (isPinched && !pinched) {
+                    // Grab nearest element card
+                    const cards = document.querySelectorAll('.elem-card');
+                    let best = null, bd = Infinity;
+                    cards.forEach(c => {
+                        const r = c.getBoundingClientRect();
+                        const d = Math.hypot(sx - (r.left + r.width / 2), sy - (r.top + r.height / 2));
+                        if (d < 200 && d < bd) { bd = d; best = c; } // 200px grab radius
+                    });
+                    if (best) { const elem = ELEMS.find(e => e.id === best.dataset.id); pickUp(elem); }
+                }
+                if (isPinched && holding) { setFloatPos(sx, sy); hoverBeaker(sx, sy); }
+                if (!isPinched && pinched && holding) { tryPour(sx, sy); }
+                pinched = isPinched;
+
+                // ── 2-FINGER PINCH GESTURE: clear the beaker ──────────────────────────────
+                // Detect: thumb(4) + index(8) + middle(12) all close together
+                const d1 = Math.hypot(lm[4].x - lm[8].x,  lm[4].y - lm[8].y);
+                const d2 = Math.hypot(lm[4].x - lm[12].x, lm[4].y - lm[12].y);
+                const isTwoFinger = d1 < 0.09 && d2 < 0.09 && !holding;
+
+                // Middle fingertip screen pos
+                const mx12 = (pts[4].x + pts[8].x + pts[12].x) / 3;
+                const my12 = (pts[4].y + pts[8].y + pts[12].y) / 3;
+
+                if (isTwoFinger) {
+                    if (!twoFingerStart) twoFingerStart = Date.now();
+                    const elapsed = Date.now() - twoFingerStart;
+                    const progress = Math.min(1, elapsed / 1000); // 0→1 over 1 second
+
+                    // Draw countdown arc around the gesture point
+                    ctx.save();
+                    // Background circle
+                    ctx.beginPath(); ctx.arc(mx12, my12, 36, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,100,100,0.15)'; ctx.fill();
+                    ctx.strokeStyle = 'rgba(255,100,100,0.4)'; ctx.lineWidth = 3; ctx.stroke();
+                    // Progress arc (clockwise from top)
+                    ctx.beginPath();
+                    ctx.arc(mx12, my12, 36, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
+                    ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 4;
+                    ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 10;
+                    ctx.stroke();
+                    // Center icon + label
+                    ctx.shadowBlur = 0;
+                    ctx.font = 'bold 14px Poppins';
+                    ctx.fillStyle = '#ff6b6b'; ctx.textAlign = 'center';
+                    ctx.fillText('✕ Clear', mx12, my12 + 60);
+                    ctx.textAlign = 'left';
+                    ctx.restore();
+
+                    if (elapsed >= 1000) {
+                        // Trigger clear
+                        twoFingerStart = null;
+                        resetLab();
+                        narr('Beaker cleared! Add new chemicals to start a reaction.');
+                    }
+                } else {
+                    twoFingerStart = null;
+                }
+            });
+
+            mpCamera = new Camera(video, {
+                onFrame: async () => { if (video.readyState >= 2) await mpHands.send({ image: video }); },
+                width: window.innerWidth, height: window.innerHeight
+            });
+            mpCamera.start().catch(() => {
+                camOn = false;
+                document.querySelector('.tb-cam').textContent = '📷 Hand Tracking';
+                document.getElementById('webcam').style.display = 'none';
+                alert('Camera access denied. Use mouse drag to interact with chemicals.');
+            });
+        }
+
+        // ── INIT ─────────────────────────────────────────────────────────────────
+        buildElems();
+        window.addEventListener('resize', () => {
+            const tc = document.getElementById('trackCanvas'); tc.width = innerWidth; tc.height = innerHeight;
+            const ec = document.getElementById('effectCanvas'); ec.width = innerWidth; ec.height = innerHeight;
+        });
+        // Auto-start hand tracking
+        camOn = true;
+        document.getElementById('webcam').style.display = 'block';
+        startMP();
+    </script>
+</body>
+
+</html>
