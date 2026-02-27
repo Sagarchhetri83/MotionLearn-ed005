@@ -1,11 +1,18 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Dashboard } from './components/Dashboard'
+import LandingPage from './components/LandingPage.jsx'
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import LandingPage from './components/LandingPage'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-    </Routes>
+    <Router>
+      <div className="min-h-screen bg-surface-50 font-sans text-surface-900">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </Router>
   )
 }
