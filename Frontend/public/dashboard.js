@@ -123,6 +123,34 @@ if (nextAvatarBtn) {
 
 // Note: Logout functionality is now handled in dashboard.html with Firebase auth
 
+// Sidebar Navigation Buttons
+const dashboardBtn = document.getElementById('dashboard-btn');
+const leaderboardBtn = document.getElementById('leaderboard-btn');
+const challengeBtn = document.getElementById('challenge-btn');
+
+// Dashboard button - Navigate to parent dashboard
+if (dashboardBtn) {
+  dashboardBtn.addEventListener('click', () => {
+    window.location.href = 'parent-dashboard.html';
+  });
+}
+
+// Leaderboard button
+if (leaderboardBtn) {
+  leaderboardBtn.addEventListener('click', () => {
+    // TODO: Implement leaderboard functionality
+    console.log('Leaderboard clicked');
+  });
+}
+
+// Challenge button
+if (challengeBtn) {
+  challengeBtn.addEventListener('click', () => {
+    // TODO: Implement 1v1 challenge functionality
+    console.log('Challenge clicked');
+  });
+}
+
 const startButton = document.querySelector('.start-button');
 if (startButton) {
   startButton.addEventListener('click', () => {
@@ -137,6 +165,12 @@ if (startButton) {
         window.location.href = 'science/science-select.html';
         return;
       }
+      // Route to the 2D game module in public/game-module for maths
+      if (selected === 'maths' || selected === 'mathematics') {
+        window.location.href = 'game-module/index.html';
+        return;
+      }
+
       // Other subjects go straight to level select
       window.location.href = 'level-select.html';
     } catch (_) {

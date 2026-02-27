@@ -1,0 +1,39 @@
+/* Motion Math Game Styles */
+
+/* Mirror video only, NOT canvas */
+.motion-math-video {
+  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+}
+
+/* Three.js canvas should NOT be mirrored */
+.motion-math-canvas {
+  transform: none !important;
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s infinite;
+}

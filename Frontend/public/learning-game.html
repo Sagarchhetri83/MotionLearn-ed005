@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotionLearn - Learning Game</title>
+  <link rel="stylesheet" href="learning-game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- MediaPipe Hands -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="instruction-text" id="instruction-text">
+      Choose the correct answer
+    </div>
+    <button class="end-game-btn" id="end-game-btn">End Game</button>
+  </div>
+
+  <!-- Main Container -->
+  <div class="game-container">
+    <!-- Left Sidebar -->
+    <div class="left-sidebar">
+      <div class="info-box score-box">
+        <h3>Score</h3>
+        <div class="score-value" id="score-value">Score: 0</div>
+      </div>
+
+      <div class="info-box history-box">
+        <h3>History</h3>
+        <div class="history-content" id="history-content">
+          <!-- History items will be added here -->
+        </div>
+      </div>
+
+      <div class="info-box tip-box">
+        <h3>Tip</h3>
+        <div class="tip-content" id="tip-content">
+          Try E next
+        </div>
+      </div>
+
+      <div class="info-box controls-box">
+        <h3>Controls</h3>
+        <div class="controls-buttons">
+          <button class="control-btn start-btn" id="start-btn">Start</button>
+          <button class="control-btn restart-btn" id="restart-btn">Restart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Camera Area -->
+    <div class="center-area">
+      <video id="camera-feed" autoplay playsinline></video>
+      <canvas id="overlay-canvas"></canvas>
+      <div class="camera-placeholder" id="camera-placeholder">
+        <p>Click "Start" to begin</p>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="right-sidebar">
+      <div class="info-box level-box">
+        <h3>Level</h3>
+        <div class="level-value" id="level-value">Level: 1</div>
+      </div>
+
+      <div class="info-box progress-box">
+        <h3>Progress</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">0/5 Complete</div>
+      </div>
+
+      <div class="info-box levels-grid-box">
+        <h3>Levels</h3>
+        <div class="levels-grid" id="levels-grid">
+          <!-- Level buttons will be generated here -->
+        </div>
+      </div>
+
+      <button class="toggle-camera-btn" id="toggle-camera-btn">Toggle Camera</button>
+    </div>
+  </div>
+
+  <script type="module" src="learning-game.js"></script>
+</body>
+</html>

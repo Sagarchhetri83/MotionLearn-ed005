@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EduCatch Game Module</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css?v=20251006" />
+  </head>
+  <body>
+    <div class="dashboard">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="task-text">Tap A to Z in order</div>
+        <div class="header-actions">
+          <button id="endGameButton" type="button" class="btn danger">End Game</button>
+        </div>
+      </header>
+
+      <!-- Left Sidebar -->
+      <aside class="sidebar left">
+        <div class="panel score-panel">
+          <div class="panel-title">Score</div>
+          <div id="score-display" class="panel-value">Score: 0</div>
+        </div>
+        <div class="panel history-panel">
+          <div class="panel-title">History</div>
+          <div id="dropBox" class="history-box"></div>
+        </div>
+        <div class="panel tip-panel">
+          <div class="panel-title">Tip</div>
+          <div id="tipBox" class="tip-box">Try E next</div>
+        </div>
+        <div class="panel controls-panel">
+          <div class="panel-title">Controls</div>
+          <div class="footer-actions">
+            <button id="startButtonSide" type="button" class="btn primary">Start</button>
+            <button id="restartLevelButton" type="button" class="btn">Restart</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Game Area -->
+      <main class="main">
+        <div class="game-area">
+          <div id="container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas class="output_canvas" id="output_canvas"></canvas>
+            <!-- Transparent overlay used as spawn bounds and interaction layer -->
+            <div id="ui-container"></div>
+          </div>
+
+          <!-- Loading indicator while model initializes -->
+          <div id="loading" role="status" aria-live="polite">Loading game...</div>
+
+          <!-- Game Over overlay -->
+          <div id="game-over-screen" style="display: none;">
+            <div class="game-over-content">
+              <h2 id="game-over-message">Game Over!</h2>
+              <p id="final-score-display">Your Score: 0</p>
+              <button id="returnToDashboardButton" type="button">Return to Dashboard</button>
+            </div>
+          </div>
+
+          <!-- Level Complete overlay -->
+          <div id="level-complete-screen" style="display: none;">
+            <div class="level-complete-content">
+              <h2 class="level-complete-title">🎉 Level Complete! 🎉</h2>
+              <p id="level-complete-score">Your Score: 0</p>
+              <p id="next-level-preview">Next Level: Simple Words</p>
+              <div class="level-complete-actions">
+                <button id="continueToNextLevel" type="button" class="btn continue-btn">Continue to Next Level</button>
+                <button id="endGameAfterLevel" type="button" class="btn end-btn">Back</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Sidebar -->
+      <aside class="sidebar right">
+        <div class="panel level-panel">
+          <div class="panel-title">Level</div>
+          <div id="level-display" class="panel-value">Level: 1</div>
+        </div>
+        <div class="panel progress-panel">
+          <div class="panel-title">Progress</div>
+          <div class="level-progress-container">
+            <div class="level-progress-bar">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <div class="level-status">
+              <span id="completed-levels">0</span>/<span id="total-levels">30</span> Complete
+            </div>
+          </div>
+        </div>
+        <div class="panel levels-preview-panel">
+          <div class="panel-title">Levels</div>
+          <div class="levels-grid" id="levels-grid">
+            <!-- Levels will be generated dynamically -->
+          </div>
+        </div>
+        <div class="panel camera-panel">
+          <button id="cameraToggle" type="button" class="btn">Toggle Camera</button>
+        </div>
+      </aside>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <!-- Buttons removed as requested -->
+      </footer>
+    </div>
+
+    <!-- MediaPipe Tasks Vision (Hands Landmarker, Drawing utils) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14"></script>
+
+    <!-- App logic -->
+    <script type="module" src="./script.js?v=20251006"></script>
+  </body>
+  </html>
+
+

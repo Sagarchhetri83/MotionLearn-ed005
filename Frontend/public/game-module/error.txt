@@ -1,0 +1,8 @@
+c:\Users\Sagar Chhetri\Desktop\MotionLearn\Frontend\public\game-module\script.js:3578
+}
+^
+
+SyntaxError: Unexpected token '}'
+    at checkSyntax (node:internal/main/check_syntax:74:5)
+
+Node.js v22.18.0

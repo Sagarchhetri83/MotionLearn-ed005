@@ -1,0 +1,1 @@
+C:\Program Files\nodejs\node.exe: either --check or --eval can be used, not both
