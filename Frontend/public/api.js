@@ -470,3 +470,45 @@ export async function getLearningDistribution(childId) {
         percentage: totalSeconds > 0 ? Math.round((seconds / totalSeconds) * 100) : 0,
     }));
 }
+
+// ═══════════════════════════════════════════════
+// REAL-TIME SYNC
+// ═══════════════════════════════════════════════
+
+/** Subscribe to live updates for a specific child's data */
+export function subscribeToChildUpdates(childId, callback) {
+    if (!childId) return null;
+
+    console.log(`[Realtime] Subscribing to updates for child: ${childId}`);
+
+    // Create a Supabase channel
+    const channel = supabase.channel(`child_${childId}_updates`);
+
+    // Listen to all relevant tables where child_id matches
+    const tables = ['game_sessions', 'achievements', 'daily_activity', 'skill_scores'];
+
+    tables.forEach(table => {
+        channel.on(
+            'postgres_changes',
+            {
+                event: '*',          // Listen to INSERT, UPDATE, DELETE
+                schema: 'public',
+                table: table,
+                filter: `child_id=eq.${childId}`
+            },
+            (payload) => {
+                console.log(`[Realtime] Received ${payload.eventType} on ${table}`, payload);
+                if (callback) callback(payload);
+            }
+        );
+    });
+
+    // Start listening
+    channel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            console.log(`[Realtime] Successfully connected to live updates!`);
+        }
+    });
+
+    return channel;
+}

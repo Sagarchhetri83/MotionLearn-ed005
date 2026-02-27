@@ -8,6 +8,7 @@ import {
     getLearningDistribution,
     saveParentalControls,
     signOut,
+    subscribeToChildUpdates,
 } from './api.js';
 
 let activeChild = null;
@@ -47,10 +48,45 @@ async function initDashboard() {
 
         console.log('[Dashboard] Loaded real data for:', activeChild.name);
 
+        // Start listening for real-time updates from child gameplay
+        setupLiveSync(activeChild.id);
+
     } catch (err) {
         console.warn('[Dashboard] Failed to load data:', err.message);
         // Gracefully fall back to static hardcoded data
     }
+}
+
+/** Set up Supabase Realtime sync to automatically refresh UI */
+let syncChannel = null;
+
+function setupLiveSync(childId) {
+    if (syncChannel) {
+        syncChannel.unsubscribe(); // Clean up old subscription
+    }
+
+    syncChannel = subscribeToChildUpdates(childId, async (payload) => {
+        console.log('[Dashboard] ⚡ Live event received, refreshing UI data...');
+        try {
+            // Re-fetch everything silently
+            const newData = await getDashboardData(childId);
+            const newDist = await getLearningDistribution(childId);
+
+            // Re-render UI components
+            populateWelcomeBanner(newData);
+            populatePerformance(newData.performance);
+            populateLearningDistribution(newDist);
+            populateSkillCircles(newData.skills);
+            populateWeeklyChart(newData.weeklyActivity);
+            populateBadges(newData.badges);
+
+            // Optional: Show a subtle toast or notification that a live sync occurred
+            console.log('[Dashboard] ✅ Live sync complete');
+
+        } catch (err) {
+            console.warn('[Dashboard] Live sync refresh failed:', err);
+        }
+    });
 }
 
 /** Update welcome banner with real child data */
