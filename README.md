@@ -248,12 +248,19 @@ Block-based programming challenges:
 ## Screenshots
 
 > Screenshots will be added here showcasing the dashboard, game module, science selection, and parental analytics.
+> <img width="1900" height="895" alt="Landindpage" src="https://github.com/user-attachments/assets/d5a26c19-8286-4add-89e8-f734f5eb29a6" />
+<img width="1919" height="1021" alt="Gamified_Dashboard" src="https://github.com/user-attachments/assets/85af5cef-db09-4854-b871-b31062587112" />
+<img width="1898" height="904" alt="Parental_Dashboard" src="https://github.com/user-attachments/assets/10d749f7-3f0d-4c76-8ae8-c2e9bef564e7" />
+<img width="1918" height="904" alt="Maths_modules" src="https://github.com/user-attachments/assets/e1d9e11d-ec55-4f9d-9656-7d2766c1602c" />
+<img width="1919" height="907" alt="Science_module" src="https://github.com/user-attachments/assets/b6fca3e7-0448-45f7-9676-a261099e8aec" />
+
 
 ---
 
 ## Team
 
-Built by the MotionLearn team as an interactive learning platform that bridges the gap between play and education through gesture-based interaction.
+Built by the Morpheus Builder team as an interactive learning platform that bridges the gap between play and education through gesture-based interaction.
+
 
 ---
 
