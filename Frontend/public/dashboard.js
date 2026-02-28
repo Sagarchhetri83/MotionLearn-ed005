@@ -151,11 +151,10 @@ if (leaderboardBtn) {
   });
 }
 
-// Challenge button
+// Challenge button → opens 1v1 STEM Arena
 if (challengeBtn) {
   challengeBtn.addEventListener('click', () => {
-    // TODO: Implement 1v1 challenge functionality
-    console.log('Challenge clicked');
+    window.open('http://localhost:3002', '_blank');
   });
 }
 
